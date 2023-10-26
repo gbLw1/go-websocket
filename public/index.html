@@ -42,7 +42,9 @@
             class="message"
             :class="[msg.from == this.nickname ? 'message-right': '']"
           >
+            <!-- Avatar left side (receiver) -->
             <div
+              v-if="msg.from != this.nickname"
               :title="msg.from"
               class="message-avatar"
               :class="[msg.from == 'SERVER' ? 'server-avatar': '']"
@@ -50,6 +52,7 @@
               {{msg.from.toUpperCase().includes('GUEST') ? '??' :
               msg.from.slice(0, 2).toUpperCase()}}
             </div>
+
             <div class="message-content">
               <p
                 class="message-nickname"
@@ -59,6 +62,16 @@
               </p>
               <p class="message-text">{{msg.content}}</p>
               <p class="message-timestamp">{{msg.sentAt}}</p>
+            </div>
+
+            <!-- Avatar right side (sender) -->
+            <div
+              v-if="msg.from == this.nickname"
+              :title="msg.from"
+              class="message-avatar"
+            >
+              {{msg.from.toUpperCase().includes('GUEST') ? '??' :
+              msg.from.slice(0, 2).toUpperCase()}}
             </div>
           </li>
         </ul>
