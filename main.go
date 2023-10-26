@@ -18,6 +18,7 @@ var clients map[*Client]bool = make(map[*Client]bool)
 func wsHandler(w http.ResponseWriter, r *http.Request) {
 	nickname := r.URL.Query().Get("nickname")
 
+	// open connection
 	conn, err := websocket.Accept(w, r, &websocket.AcceptOptions{
 		InsecureSkipVerify: true, // disable CORS
 	})
@@ -25,6 +26,7 @@ func wsHandler(w http.ResponseWriter, r *http.Request) {
 		log.Fatal("Server: Failed to open connection:", err)
 	}
 
+	// create a client
 	client := Client{
 		Nickname:   nickname,
 		connection: conn,
@@ -40,10 +42,10 @@ func wsHandler(w http.ResponseWriter, r *http.Request) {
 		)
 	}
 
+	// Read / Echo all the messages
 	for {
 		_, data, err := client.connection.Read(r.Context())
 		if err != nil {
-			// conn.Write(r.Context(), websocket.MessageText, []byte("Client disconnected"))
 			log.Println("Server: " + nickname + "disconnected")
 			delete(clients, &client)
 			break
@@ -51,10 +53,10 @@ func wsHandler(w http.ResponseWriter, r *http.Request) {
 
 		log.Println(string(data))
 
-		serverResponse := "Received: " + string(data)
+		response := "Received: " + string(data)
 
 		for client := range clients {
-			client.connection.Write(r.Context(), websocket.MessageText, []byte(serverResponse))
+			client.connection.Write(r.Context(), websocket.MessageText, []byte(response))
 		}
 	}
 }
@@ -73,5 +75,5 @@ func main() {
 	http.HandleFunc("/ws", wsHandler)
 	http.HandleFunc("/clients", clientsHandler)
 
-	http.ListenAndServe(":42069", nil)
+	http.ListenAndServe(":1337", nil)
 }
