@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"time"
 
 	"nhooyr.io/websocket"
 )
@@ -11,6 +12,12 @@ import (
 type Client struct {
 	Nickname   string
 	connection *websocket.Conn
+}
+
+type Message struct {
+	From    string `json:"from"`
+	Content string `json:"content"`
+	SentAt  string `json:"sentAt"`
 }
 
 var clients map[*Client]bool = make(map[*Client]bool)
@@ -35,28 +42,44 @@ func wsHandler(w http.ResponseWriter, r *http.Request) {
 
 	// notifies all connected clients
 	for c := range clients {
-		c.connection.Write(
-			r.Context(),
-			websocket.MessageText,
-			[]byte("Server: User '"+nickname+"' connected"),
-		)
+		msg, _ := json.Marshal(Message{
+			From:    nickname,
+			Content: nickname + " connected",
+			SentAt:  time.Now().Format("02-01-2006 15:04:05"),
+		})
+
+		c.connection.Write(r.Context(), websocket.MessageText, msg)
 	}
 
-	// Read / Echo all the messages
 	for {
+		// read client messages
 		_, data, err := client.connection.Read(r.Context())
 		if err != nil {
-			log.Println("Server: " + nickname + "disconnected")
+			log.Println("Server: " + nickname + " disconnected")
 			delete(clients, &client)
 			break
 		}
 
-		log.Println(string(data))
+		// deserialize message
+		var msgReceived Message
+		json.Unmarshal(data, &msgReceived)
 
-		response := "Received: " + string(data)
+		// log message to server
+		log.Println(msgReceived.From + ": " + msgReceived.Content)
 
+		// write client messages
 		for client := range clients {
-			client.connection.Write(r.Context(), websocket.MessageText, []byte(response))
+			msg, err := json.Marshal(Message{
+				From:    msgReceived.From,
+				Content: msgReceived.Content,
+				SentAt:  time.Now().Format("02-01-2006 15:04:05"),
+			})
+			if err != nil {
+				log.Println("Server: Failed to serialize message:", err)
+				continue
+			}
+
+			client.connection.Write(r.Context(), websocket.MessageText, msg)
 		}
 	}
 }
