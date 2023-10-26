@@ -40,10 +40,10 @@ func wsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	clients[&client] = true
 
-	// notifies all connected clients
+	// notifies chat that a new client connected
 	for c := range clients {
 		msg, _ := json.Marshal(Message{
-			From:    nickname,
+			From:    "SERVER",
 			Content: nickname + " connected",
 			SentAt:  time.Now().Format("02-01-2006 15:04:05"),
 		})
@@ -55,8 +55,20 @@ func wsHandler(w http.ResponseWriter, r *http.Request) {
 		// read client messages
 		_, data, err := client.connection.Read(r.Context())
 		if err != nil {
-			log.Println("Server: " + nickname + " disconnected")
+			log.Println("SERVER: " + nickname + " disconnected")
 			delete(clients, &client)
+
+			// notifies chat that client disconnected
+			for c := range clients {
+				msg, _ := json.Marshal(Message{
+					From:    "SERVER",
+					Content: nickname + " disconnected",
+					SentAt:  time.Now().Format("02-01-2006 15:04:05"),
+				})
+
+				c.connection.Write(r.Context(), websocket.MessageText, msg)
+			}
+
 			break
 		}
 
@@ -75,7 +87,7 @@ func wsHandler(w http.ResponseWriter, r *http.Request) {
 				SentAt:  time.Now().Format("02-01-2006 15:04:05"),
 			})
 			if err != nil {
-				log.Println("Server: Failed to serialize message:", err)
+				log.Println("SERVER: Failed to serialize message:", err)
 				continue
 			}
 
