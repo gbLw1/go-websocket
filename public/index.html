@@ -5,11 +5,56 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <link rel="stylesheet" href="style.css" />
   </head>
   <body>
     <div id="app">
-      <input type="text" placeholder="nickname" v-model="nickname" />
-      <button type="button" @click="connect">Join</button>
+      <div class="container" v-if="!connected">
+        <div class="form">
+          <input
+            v-model="nickname"
+            class="input"
+            type="text"
+            placeholder="nickname"
+          />
+          <button type="button" class="button" @click="connect">Join</button>
+        </div>
+      </div>
+
+      <div class="client-pannel" v-if="connected">
+        <label>Connected clients</label>
+        <ul>
+          <li v-for="(client, i) in clients" :key="i">{{client.Nickname}}</li>
+        </ul>
+      </div>
+
+      <div class="container" v-if="connected">
+        <label>Olá, {{nickname}}</label>
+
+        <form class="form" @submit.prevent="sendMessage">
+          <input type="text" v-model="message" placeholder="message" />
+          <button class="button" type="submit">Send</button>
+        </form>
+
+        <div class="center">
+          <ul class="chat-messages">
+            <li
+              v-for="(msg, i) in messages"
+              :key="i"
+              class="message"
+              :class="[msg.from == this.nickname ? 'message-right': '']"
+            >
+              <div class="message-avatar">
+                {{msg?.from.substr(0,2).toUpperCase() || '??'}}
+              </div>
+              <div class="message-content">
+                <p class="message-text">{{msg.content}}</p>
+                <p class="message-timestamp">{{msg.sentAt}}</p>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
     </div>
 
     <script>
@@ -21,21 +66,43 @@
             nickname: "",
             connected: false,
             ws: null,
+            message: "",
+            messages: [],
+            clients: [],
           };
         },
         methods: {
+          sendMessage() {
+            const msg = {
+              from: this.nickname,
+              content: this.message,
+            };
+            this.ws.send(JSON.stringify(msg));
+            this.message = "";
+          },
           onOpen(event) {
             this.connected = true;
           },
           onMessage(event) {
-            console.log(event.data);
+            const data = JSON.parse(event.data);
+            this.messages.push(data);
+            this.updateConnectedClients();
           },
           connect() {
             this.ws = new WebSocket(
-              `ws://localhost:42069/ws?nickname=${this.nickname}`,
+              `ws://localhost:1337/ws?nickname=${this.nickname}`,
             );
             this.ws.onopen = this.onOpen;
             this.ws.onmessage = this.onMessage;
+          },
+          async updateConnectedClients() {
+            try {
+              const res = await fetch("http://localhost:1337/clients");
+              const data = await res.json();
+              this.clients = data;
+            } catch (error) {
+              console.log(error);
+            }
           },
         },
       }).mount("#app");

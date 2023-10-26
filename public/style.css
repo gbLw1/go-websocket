@@ -1,0 +1,91 @@
+#app {
+  display: flex;
+}
+
+.container {
+  text-align: center;
+  margin: 0 auto;
+  width: 60%;
+}
+
+.client-pannel {
+  margin: 8px 0 8px 8px;
+  min-width: 200px;
+  order: -1;
+}
+
+.form {
+  display: flex;
+  justify-content: space-between;
+}
+
+.form input {
+  flex: 1;
+  margin-right: 0.5rem;
+}
+
+.input {
+  padding: 12px 20px;
+  margin: 8px 0;
+  display: inline-block;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+.button {
+  background-color: #4caf50;
+  color: white;
+  padding: 14px 20px;
+  margin: 8px 0;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.button:hover {
+  background-color: #45a049;
+}
+
+.chat-messages {
+  list-style-type: none;
+  padding: 0;
+}
+
+.message {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.message-right {
+  justify-content: flex-end;
+}
+
+.message-avatar {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #ccc;
+  margin-right: 10px;
+}
+
+.message-content {
+  padding: 8px;
+  background-color: #f0f0f0;
+  border-radius: 10px;
+}
+
+.message-text {
+  margin: 0;
+  text-align: left;
+}
+
+.message-timestamp {
+  font-size: 12px;
+  color: #888;
+  float: right;
+}
