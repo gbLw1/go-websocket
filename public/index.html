@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <title>Websocket Go</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+  </head>
+  <body>
+    <div id="app">
+      <input type="text" placeholder="nickname" v-model="nickname" />
+      <button type="button" @click="connect">Join</button>
+    </div>
+
+    <script>
+      const { createApp, ref } = Vue;
+
+      createApp({
+        data() {
+          return {
+            nickname: "",
+            connected: false,
+            ws: null,
+          };
+        },
+        methods: {
+          onOpen(event) {
+            this.connected = true;
+          },
+          onMessage(event) {
+            console.log(event.data);
+          },
+          connect() {
+            this.ws = new WebSocket(
+              `ws://localhost:42069/ws?nickname=${this.nickname}`,
+            );
+            this.ws.onopen = this.onOpen;
+            this.ws.onmessage = this.onMessage;
+          },
+        },
+      }).mount("#app");
+    </script>
+  </body>
+</html>
