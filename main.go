@@ -1,37 +1,51 @@
 package main
 
 import (
+	"encoding/json"
 	"log"
 	"net/http"
-	"strconv"
 
 	"nhooyr.io/websocket"
 )
 
-var clients map[*websocket.Conn]bool = make(map[*websocket.Conn]bool)
+type Client struct {
+	Nickname   string
+	connection *websocket.Conn
+}
+
+var clients map[*Client]bool = make(map[*Client]bool)
 
 func wsHandler(w http.ResponseWriter, r *http.Request) {
+	nickname := r.URL.Query().Get("nickname")
+
 	conn, err := websocket.Accept(w, r, &websocket.AcceptOptions{
 		InsecureSkipVerify: true, // disable CORS
 	})
 	if err != nil {
-		log.Fatal("Failed to open connection:", err)
+		log.Fatal("Server: Failed to open connection:", err)
 	}
 
-	// save the new connected client
-	clients[conn] = true
+	client := Client{
+		Nickname:   nickname,
+		connection: conn,
+	}
+	clients[&client] = true
 
 	// notifies all connected clients
-	for client := range clients {
-		client.Write(r.Context(), websocket.MessageText, []byte("New client connected"))
+	for c := range clients {
+		c.connection.Write(
+			r.Context(),
+			websocket.MessageText,
+			[]byte("Server: User '"+nickname+"' connected"),
+		)
 	}
 
 	for {
-		_, data, err := conn.Read(r.Context())
+		_, data, err := client.connection.Read(r.Context())
 		if err != nil {
 			// conn.Write(r.Context(), websocket.MessageText, []byte("Client disconnected"))
-			log.Println("Client disconnected")
-			delete(clients, conn)
+			log.Println("Server: " + nickname + "disconnected")
+			delete(clients, &client)
 			break
 		}
 
@@ -40,19 +54,24 @@ func wsHandler(w http.ResponseWriter, r *http.Request) {
 		serverResponse := "Received: " + string(data)
 
 		for client := range clients {
-			client.Write(r.Context(), websocket.MessageText, []byte(serverResponse))
+			client.connection.Write(r.Context(), websocket.MessageText, []byte(serverResponse))
 		}
 	}
 }
 
-// clients connected
 func clientsHandler(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte(strconv.Itoa(len(clients))))
+	w.Header().Add("Content-Type", "application/json")
+	var res []*Client
+	for c := range clients {
+		res = append(res, c)
+	}
+	json.NewEncoder(w).Encode(res)
 }
 
 func main() {
+	http.Handle("/", http.FileServer(http.Dir("./public")))
 	http.HandleFunc("/ws", wsHandler)
 	http.HandleFunc("/clients", clientsHandler)
 
-	http.ListenAndServe(":3000", nil)
+	http.ListenAndServe(":42069", nil)
 }
