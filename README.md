@@ -16,8 +16,9 @@ The websocket packaged used in this project is:
 
 - [x] [WebSocket](https://pkg.go.dev/nhooyr.io/websocket)
 
-## Usage
+## Run
 
 ```bash
 go run ./main.go
 ```
+
