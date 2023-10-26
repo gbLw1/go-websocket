@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"log"
 	"net/http"
@@ -12,6 +13,7 @@ import (
 type Client struct {
 	Nickname   string
 	connection *websocket.Conn
+	context    context.Context
 }
 
 type Message struct {
@@ -20,7 +22,11 @@ type Message struct {
 	SentAt  string `json:"sentAt"`
 }
 
-var clients map[*Client]bool = make(map[*Client]bool)
+var (
+	clients     map[*Client]bool = make(map[*Client]bool)
+	joinCh      chan *Client     = make(chan *Client)
+	broadcastCh chan Message     = make(chan Message)
+)
 
 func wsHandler(w http.ResponseWriter, r *http.Request) {
 	nickname := r.URL.Query().Get("nickname")
@@ -33,42 +39,28 @@ func wsHandler(w http.ResponseWriter, r *http.Request) {
 		log.Fatal("Server: Failed to open connection:", err)
 	}
 
+	go broadcast()
+	go joiner()
+
 	// create a client
-	client := Client{
-		Nickname:   nickname,
-		connection: conn,
-	}
-	clients[&client] = true
+	client := Client{Nickname: nickname, connection: conn, context: r.Context()}
+	joinCh <- &client
 
-	// notifies chat that a new client connected
-	for c := range clients {
-		msg, _ := json.Marshal(Message{
-			From:    "SERVER",
-			Content: nickname + " connected",
-			SentAt:  time.Now().Format("02-01-2006 15:04:05"),
-		})
+	reader(&client)
+}
 
-		c.connection.Write(r.Context(), websocket.MessageText, msg)
-	}
-
+func reader(client *Client) {
 	for {
-		// read client messages
-		_, data, err := client.connection.Read(r.Context())
+		_, data, err := client.connection.Read(client.context)
+		// notifies when client disconnected
 		if err != nil {
-			log.Println("SERVER: " + nickname + " disconnected")
-			delete(clients, &client)
-
-			// notifies chat that client disconnected
-			for c := range clients {
-				msg, _ := json.Marshal(Message{
-					From:    "SERVER",
-					Content: nickname + " disconnected",
-					SentAt:  time.Now().Format("02-01-2006 15:04:05"),
-				})
-
-				c.connection.Write(r.Context(), websocket.MessageText, msg)
+			log.Println("SERVER: " + client.Nickname + " disconnected")
+			delete(clients, client)
+			broadcastCh <- Message{
+				From:    "SERVER",
+				Content: client.Nickname + " disconnected",
+				SentAt:  time.Now().Format("02-01-2006 15:04:05"),
 			}
-
 			break
 		}
 
@@ -79,19 +71,36 @@ func wsHandler(w http.ResponseWriter, r *http.Request) {
 		// log message to server
 		log.Println(msgReceived.From + ": " + msgReceived.Content)
 
-		// write client messages
-		for client := range clients {
-			msg, err := json.Marshal(Message{
-				From:    msgReceived.From,
-				Content: msgReceived.Content,
-				SentAt:  time.Now().Format("02-01-2006 15:04:05"),
-			})
-			if err != nil {
-				log.Println("SERVER: Failed to serialize message:", err)
-				continue
-			}
+		// broadcast message to all clients
+		broadcastCh <- Message{
+			From:    msgReceived.From,
+			Content: msgReceived.Content,
+			SentAt:  time.Now().Format("02-01-2006 15:04:05"),
+		}
+	}
+}
 
-			client.connection.Write(r.Context(), websocket.MessageText, msg)
+func joiner() {
+	// loop while channel is open
+	for client := range joinCh {
+		clients[client] = true
+
+		log.Println("SERVER: " + client.Nickname + " connected")
+
+		// notifies when a new client connects
+		broadcastCh <- Message{
+			From:    "SERVER",
+			Content: client.Nickname + " connected",
+			SentAt:  time.Now().Format("02-01-2006 15:04:05"),
+		}
+	}
+}
+
+func broadcast() {
+	for msg := range broadcastCh {
+		for client := range clients {
+			msg, _ := json.Marshal(msg)
+			client.connection.Write(client.context, websocket.MessageText, msg)
 		}
 	}
 }
