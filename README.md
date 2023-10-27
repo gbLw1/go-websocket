@@ -14,7 +14,7 @@ The server and client were written in [Go](https://golang.org) and [VueJS](https
 
 The websocket packaged used in this project is:
 
-- [x] [nhooyr.io/websocket](https://pkg.go.dev/nhooyr.io/websocket)
+- [x] [nhooyr.io/websocket](https://github.com/nhooyr/websocket)
 
 ## Run
 
