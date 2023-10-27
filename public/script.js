@@ -11,6 +11,7 @@ createApp({
       clients: [],
     };
   },
+
   methods: {
     sendMessage() {
       const msg = {
@@ -66,6 +67,7 @@ createApp({
       this.messages = [];
       this.clients = [];
     },
+
     async updateConnectedClients() {
       try {
         const res = await fetch("http://localhost:1337/clients");
