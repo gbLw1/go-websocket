@@ -4,7 +4,7 @@ createApp({
   data() {
     return {
       nickname: "",
-      room: "general",
+      room: "",
       connected: false,
       ws: null,
       message: "",
