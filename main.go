@@ -81,7 +81,7 @@ func reader(client *Client, room string) {
 				From:    "SERVER",
 				To:      room,
 				Content: client.Nickname + " disconnected",
-				SentAt:  time.Now().Format("02-01-2006 15:04:05"),
+				SentAt:  getTimestamp(),
 			}
 			break
 		}
@@ -100,7 +100,7 @@ func reader(client *Client, room string) {
 			From:    msgReceived.From,
 			To:      room,
 			Content: msgReceived.Content,
-			SentAt:  time.Now().Format("02-01-2006 15:04:05"),
+			SentAt:  getTimestamp(),
 		}
 	}
 }
@@ -117,7 +117,7 @@ func joiner() {
 			From:    "SERVER",
 			To:      client.roomName,
 			Content: client.Nickname + " connected",
-			SentAt:  time.Now().Format("02-01-2006 15:04:05"),
+			SentAt:  getTimestamp(),
 		}
 	}
 }
@@ -143,6 +143,10 @@ func clientsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	json.NewEncoder(w).Encode(res)
+}
+
+func getTimestamp() string {
+	return time.Now().UTC().Add(time.Duration(-3) * time.Hour).Format("02-01-2006 15:04:05")
 }
 
 func main() {
