@@ -53,7 +53,7 @@ createApp({
       }
 
       this.ws = new WebSocket(
-        `ws://go-websocket-production.up.railway.app/ws?nickname=${this.nickname}`,
+        `wss://go-websocket-production.up.railway.app/ws?nickname=${this.nickname}`,
       );
       this.ws.onopen = this.onOpen;
       this.ws.onmessage = this.onMessage;
