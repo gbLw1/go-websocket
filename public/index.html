@@ -45,7 +45,9 @@
       <div class="container" v-if="connected">
         <p>
           Hello, <strong>{{nickname}}</strong> &nbsp;
-          <a class="disconnect-link" href="#" @click="disconnect">Disconnect</a>
+          <button class="disconnect-link" @click="disconnect">
+            Disconnect
+          </button>
         </p>
 
         <ul class="chat-messages">

@@ -6,6 +6,7 @@ body {
 
 #app {
   display: flex;
+  flex-wrap: wrap;
 }
 
 .header {
@@ -133,6 +134,10 @@ body {
 
 .disconnect-link {
   color: red;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  text-decoration: underline;
 }
 
 .gorph {
