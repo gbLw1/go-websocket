@@ -24,7 +24,7 @@ createApp({
       this.message = "";
 
       const chatMessages = document.querySelector(".chat-messages");
-      chatMessages.addEventListener("DOMSubtreeModified", () => {
+      chatMessages.addEventListener("MutationObserver", () => {
         chatMessages.scrollTop = chatMessages.scrollHeight;
       });
     },
