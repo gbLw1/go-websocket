@@ -15,10 +15,12 @@ type Client struct {
 	Nickname   string
 	connection *websocket.Conn
 	context    context.Context
+	roomName   string
 }
 
 type Message struct {
 	From    string `json:"from"`
+	To      string `json:"to"`
 	Content string `json:"content"`
 	SentAt  string `json:"sentAt"`
 }
@@ -31,6 +33,18 @@ var (
 
 func wsHandler(w http.ResponseWriter, r *http.Request) {
 	nickname := r.URL.Query().Get("nickname")
+	roomFromQuery := r.URL.Query().Get("room")
+
+	// validate required query params
+
+	if nickname == "" {
+		log.Fatal("Server: No nickname provided")
+	}
+
+	if roomFromQuery == "" {
+		log.Println("SERVER: No room provided, using default room")
+		roomFromQuery = "geral"
+	}
 
 	// open connection
 	conn, err := websocket.Accept(w, r, &websocket.AcceptOptions{
@@ -44,21 +58,28 @@ func wsHandler(w http.ResponseWriter, r *http.Request) {
 	go joiner()
 
 	// create a client
-	client := Client{Nickname: nickname, connection: conn, context: r.Context()}
+	client := Client{
+		Nickname:   nickname,
+		connection: conn,
+		context:    r.Context(),
+		roomName:   roomFromQuery,
+	}
+
 	joinCh <- &client
 
-	reader(&client)
+	reader(&client, roomFromQuery)
 }
 
-func reader(client *Client) {
+func reader(client *Client, room string) {
 	for {
 		_, data, err := client.connection.Read(client.context)
 		// notifies when client disconnected
 		if err != nil {
-			log.Println("SERVER: " + client.Nickname + " disconnected")
+			log.Println("SERVER: " + client.Nickname + " disconnected from room " + client.roomName)
 			delete(clients, client)
 			broadcastCh <- Message{
 				From:    "SERVER",
+				To:      room,
 				Content: client.Nickname + " disconnected",
 				SentAt:  time.Now().Format("02-01-2006 15:04:05"),
 			}
@@ -70,11 +91,14 @@ func reader(client *Client) {
 		json.Unmarshal(data, &msgReceived)
 
 		// log message to server
-		log.Println(msgReceived.From + ": " + msgReceived.Content)
+		log.Println(
+			"ROOM: " + msgReceived.To + " -> " + msgReceived.From + ": " + msgReceived.Content,
+		)
 
 		// broadcast message to all clients
 		broadcastCh <- Message{
 			From:    msgReceived.From,
+			To:      room,
 			Content: msgReceived.Content,
 			SentAt:  time.Now().Format("02-01-2006 15:04:05"),
 		}
@@ -86,11 +110,12 @@ func joiner() {
 	for client := range joinCh {
 		clients[client] = true
 
-		log.Println("SERVER: " + client.Nickname + " connected")
+		log.Println("SERVER: " + client.Nickname + " connected in room " + client.roomName)
 
 		// notifies when a new client connects
 		broadcastCh <- Message{
 			From:    "SERVER",
+			To:      client.roomName,
 			Content: client.Nickname + " connected",
 			SentAt:  time.Now().Format("02-01-2006 15:04:05"),
 		}
@@ -100,8 +125,10 @@ func joiner() {
 func broadcast() {
 	for msg := range broadcastCh {
 		for client := range clients {
-			msg, _ := json.Marshal(msg)
-			client.connection.Write(client.context, websocket.MessageText, msg)
+			if client.roomName == msg.To {
+				message, _ := json.Marshal(msg)
+				client.connection.Write(client.context, websocket.MessageText, message)
+			}
 		}
 	}
 }
@@ -110,8 +137,11 @@ func clientsHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Content-Type", "application/json")
 	var res []*Client
 	for c := range clients {
-		res = append(res, c)
+		if c.roomName == r.URL.Query().Get("room") {
+			res = append(res, c)
+		}
 	}
+
 	json.NewEncoder(w).Encode(res)
 }
 
