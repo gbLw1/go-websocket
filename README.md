@@ -8,7 +8,7 @@ The server and client were written in [Go](https://golang.org) and [VueJS](https
 
 ## Example
 
-![example](./docs/example.png)
+![example](./docs/example_darkmode.png)
 
 ## Dependencies
 
