@@ -53,7 +53,7 @@ createApp({
       }
 
       this.ws = new WebSocket(
-        `wss://go-websocket-production.up.railway.app/ws?nickname=${this.nickname}`,
+        `ws://localhost:3000/ws?nickname=${this.nickname}`,
       );
       this.ws.onopen = this.onOpen;
       this.ws.onmessage = this.onMessage;
@@ -70,9 +70,7 @@ createApp({
 
     async updateConnectedClients() {
       try {
-        const res = await fetch(
-          "https://go-websocket-production.up.railway.app/clients",
-        );
+        const res = await fetch("http://localhost:3000/clients");
         const data = await res.json();
         this.clients = data;
       } catch (error) {
