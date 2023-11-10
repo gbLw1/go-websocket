@@ -45,12 +45,12 @@ createApp({
     },
 
     connect() {
-      if (!this.nickname) {
-        this.nickname = `Guest${Math.floor(Math.random() * 1000)}`;
-      }
-
       if (!this.room) {
         this.room = "general";
+      }
+
+      if (!this.nickname) {
+        this.nickname = `Guest${Math.floor(Math.random() * 1000)}`;
       }
 
       if (this.nickname.toUpperCase() === "SERVER") {

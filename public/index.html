@@ -41,6 +41,7 @@
           <h1>WebSocket</h1>
         </a>
         <div v-if="connected">
+          <h2>Room: {{messages[0].to}}</h2>
           <label>Connected clients</label>
           <ul>
             <li v-for="(client, i) in clients" :key="i">{{client.Nickname}}</li>
