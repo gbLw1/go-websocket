@@ -18,6 +18,24 @@ The websocket packaged used in this project is:
 
 ## Run
 
+### Testing locally:
+
+1. change the `./public/script.js` file to use the local server on connect() method:
+
+```javascript
+this.ws = new WebSocket(
+    `ws://localhost:3000/ws?nickname=${this.nickname}&room=${this.room}`
+);
+```
+
+2. also change the updateConnectedClients() method to use the local server:
+
+```javascript
+const res = await fetch(
+    `https://localhost:3000/clients?room=${this.room}`,
+);
+```
+
 ```bash
 go run ./main.go
 ```
