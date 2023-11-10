@@ -1,116 +1,81 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <title>Websocket Go</title>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-    <link rel="stylesheet" href="style.css" />
-    <link rel="icon" href="favicon.ico" />
-  </head>
-  <body>
-    <div id="app">
-      <div class="container" v-if="!connected">
-        <form class="form" @submit.prevent="connect">
-          <input
-            v-model="nickname"
-            class="input"
-            type="text"
-            placeholder="nickname"
-          />
-          <input
-            v-model="room"
-            class="input"
-            type="text"
-            placeholder="Enter the room name (default: general)"
-          />
-          <button type="submit" class="button">Join</button>
-        </form>
-      </div>
 
-      <div class="client-pannel">
-        <a
-          class="header"
-          href="https://github.com/gblw1/go-websocket"
-          target="_blank"
-        >
-          <img
-            src="https://avatars.githubusercontent.com/u/73954686?v=4"
-            alt="gorph"
-            class="gorph"
-          />
-          <h1>WebSocket</h1>
-        </a>
-        <div v-if="connected">
-          <h2>Room: {{messages[0].to}}</h2>
-          <label>Connected clients</label>
-          <ul>
-            <li v-for="(client, i) in clients" :key="i">{{client.Nickname}}</li>
-          </ul>
-        </div>
-      </div>
+<head>
+  <title>gbL chat - Go WebSocket</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="icon" href="favicon.ico" />
+</head>
 
-      <div class="container" v-if="connected">
-        <p>
-          Hello, <strong>{{nickname}}</strong> &nbsp;
-          <button class="disconnect-link" @click="disconnect">
-            Disconnect
-          </button>
-        </p>
+<body>
+  <div id="app">
+    <div class="container" v-if="!connected">
+      <form class="form" @submit.prevent="connect">
+        <input v-model="nickname" class="input" type="text" placeholder="nickname" />
+        <input v-model="room" class="input" type="text" placeholder="Enter the room name (default: general)" />
+        <button type="submit" class="button">Join</button>
+      </form>
+    </div>
 
-        <ul class="chat-messages">
-          <li
-            v-for="(msg, i) in messages"
-            :key="i"
-            class="message"
-            :class="[msg.from == this.nickname ? 'message-right': '']"
-          >
-            <!-- Avatar left side (receiver) -->
-            <div
-              v-if="msg.from != this.nickname"
-              :title="msg.from"
-              class="message-avatar"
-              :class="[msg.from == 'SERVER' ? 'server-avatar': '']"
-            >
-              {{msg.from.toUpperCase().includes('GUEST') ? '??' :
-              msg.from.slice(0, 2).toUpperCase()}}
-            </div>
-
-            <div class="message-content">
-              <p
-                class="message-nickname"
-                :style="[msg.from == 'SERVER' ? 'color: #0096ff!important' : '']"
-              >
-                {{msg.from}}
-              </p>
-              <p class="message-text">{{msg.content}}</p>
-              <p class="message-timestamp">{{msg.sentAt}}</p>
-            </div>
-
-            <!-- Avatar right side (sender) -->
-            <div
-              v-if="msg.from == this.nickname"
-              :title="msg.from"
-              class="message-avatar"
-            >
-              {{msg.from.toUpperCase().includes('GUEST') ? '??' :
-              msg.from.slice(0, 2).toUpperCase()}}
-            </div>
-          </li>
+    <div class="client-pannel">
+      <a class="header" href="https://github.com/gblw1/go-websocket" target="_blank">
+        <img src="https://avatars.githubusercontent.com/u/73954686?v=4" alt="gorph" class="gorph" />
+        <h1>WebSocket</h1>
+      </a>
+      <div v-if="connected">
+        <h2>Room: {{messages[0].to}}</h2>
+        <label>Connected clients</label>
+        <ul>
+          <li v-for="(client, i) in clients" :key="i">{{client.Nickname}}</li>
         </ul>
-
-        <form class="form" @submit.prevent="sendMessage">
-          <input
-            v-model="message"
-            class="input"
-            type="text"
-            placeholder="message"
-          />
-          <button class="button" type="submit">Send</button>
-        </form>
       </div>
     </div>
 
-    <script defer src="script.js" type="module"></script>
-  </body>
+    <div class="container" v-if="connected">
+      <p>
+        Hello, <strong>{{nickname}}</strong> &nbsp;
+        <button class="disconnect-link" @click="disconnect">
+          Disconnect
+        </button>
+      </p>
+
+      <ul class="chat-messages">
+        <li v-for="(msg, i) in messages" :key="i" class="message"
+          :class="[msg.from == this.nickname ? 'message-right': '']">
+          <!-- Avatar left side (receiver) -->
+          <div v-if="msg.from != this.nickname" :title="msg.from" class="message-avatar"
+            :class="[msg.from == 'SERVER' ? 'server-avatar': '']">
+            {{msg.from.toUpperCase().includes('GUEST') ? '??' :
+            msg.from.slice(0, 2).toUpperCase()}}
+          </div>
+
+          <div class="message-content">
+            <p class="message-nickname" :style="[msg.from == 'SERVER' ? 'color: #0096ff!important' : '']">
+              {{msg.from}}
+            </p>
+            <p class="message-text">{{msg.content}}</p>
+            <p class="message-timestamp">{{msg.sentAt}}</p>
+          </div>
+
+          <!-- Avatar right side (sender) -->
+          <div v-if="msg.from == this.nickname" :title="msg.from" class="message-avatar">
+            {{msg.from.toUpperCase().includes('GUEST') ? '??' :
+            msg.from.slice(0, 2).toUpperCase()}}
+          </div>
+        </li>
+      </ul>
+
+      <form class="form" @submit.prevent="sendMessage">
+        <input v-model="message" class="input" type="text" placeholder="message" />
+        <button class="button" type="submit">Send</button>
+      </form>
+    </div>
+  </div>
+
+  <script defer src="script.js" type="module"></script>
+</body>
+
 </html>
