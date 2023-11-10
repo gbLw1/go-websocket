@@ -20,7 +20,7 @@ body {
 
 .container {
   text-align: center;
-  margin: 0 auto;
+  margin: 20px auto;
   width: 60%;
 }
 
@@ -32,7 +32,8 @@ body {
 
 .form {
   display: flex;
-  justify-content: space-between;
+  flex-wrap: wrap;
+  justify-content: end;
 }
 
 .form input {
