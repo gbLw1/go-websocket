@@ -4,6 +4,7 @@ createApp({
   data() {
     return {
       nickname: "",
+      room: "general",
       connected: false,
       ws: null,
       message: "",
@@ -16,6 +17,7 @@ createApp({
     sendMessage() {
       const msg = {
         from: this.nickname,
+        to: this.room,
         content: this.message,
       };
       this.ws.send(JSON.stringify(msg));
@@ -52,8 +54,13 @@ createApp({
         return;
       }
 
+      if (this.nickname === this.clients.find((c) => c === this.nickname)) {
+        alert("Nickname is already in use");
+        return;
+      }
+
       this.ws = new WebSocket(
-        `ws://localhost:3000/ws?nickname=${this.nickname}`,
+        `wss://go-websocket-production.up.railway.app:3000/ws?nickname=${this.nickname}&room=${this.room}`,
       );
       this.ws.onopen = this.onOpen;
       this.ws.onmessage = this.onMessage;
@@ -70,7 +77,9 @@ createApp({
 
     async updateConnectedClients() {
       try {
-        const res = await fetch("http://localhost:3000/clients");
+        const res = await fetch(
+          `https://go-websocket-production.up.railway.app:3000/clients?room=${this.room}`,
+        );
         const data = await res.json();
         this.clients = data;
       } catch (error) {
