@@ -43,7 +43,7 @@ func wsHandler(w http.ResponseWriter, r *http.Request) {
 
 	if roomFromQuery == "" {
 		log.Println("SERVER: No room provided, using default room")
-		roomFromQuery = "geral"
+		roomFromQuery = "general"
 	}
 
 	// open connection

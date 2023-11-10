@@ -49,6 +49,10 @@ createApp({
         this.nickname = `Guest${Math.floor(Math.random() * 1000)}`;
       }
 
+      if (!this.room) {
+        this.room = "general";
+      }
+
       if (this.nickname.toUpperCase() === "SERVER") {
         alert("Nickname is not allowed");
         return;

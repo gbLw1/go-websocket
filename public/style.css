@@ -13,6 +13,9 @@ body {
   display: flex;
   align-items: center;
   margin-bottom: 10px;
+  cursor: pointer;
+  text-decoration: none;
+  color: white;
 }
 
 .container {
