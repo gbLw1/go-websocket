@@ -13,7 +13,6 @@
         <form class="form" @submit.prevent="connect">
           <input
             v-model="nickname"
-            autofocus
             class="input"
             type="text"
             placeholder="nickname"
@@ -23,6 +22,14 @@
       </div>
 
       <div class="client-pannel" v-if="connected">
+        <div class="header">
+          <img
+            src="https://avatars.githubusercontent.com/u/73954686?v=4"
+            alt="gorph"
+            class="gorph"
+          />
+          <h1>WebSocket</h1>
+        </div>
         <label>Connected clients</label>
         <ul>
           <li v-for="(client, i) in clients" :key="i">{{client.Nickname}}</li>

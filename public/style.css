@@ -1,5 +1,17 @@
+body {
+  background: #333333;
+  font-family: Helvetica;
+  color: white;
+}
+
 #app {
   display: flex;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
 }
 
 .container {
@@ -22,6 +34,13 @@
 .form input {
   flex: 1;
   margin-right: 0.5rem;
+  caret-color: #4caf50;
+  box-shadow: 0 0 5px #181818;
+  background: transparent;
+  outline: 0;
+  border: 0;
+  color: white;
+  border-radius: 12px;
 }
 
 .input {
@@ -39,7 +58,7 @@
   padding: 14px 20px;
   margin: 8px 0;
   border: none;
-  border-radius: 4px;
+  border-radius: 12px;
   cursor: pointer;
 }
 
@@ -49,11 +68,11 @@
 
 .chat-messages {
   list-style-type: none;
-  padding: 0;
   height: 70vh;
   overflow-y: auto;
-  box-shadow: 1px 2px 5px #ddd;
-  padding: 8px;
+  box-shadow: 0 0 5px #181818;
+  padding: 20px;
+  border-radius: 12px;
 }
 
 .message {
@@ -72,19 +91,23 @@
   align-items: center;
   padding: 12px;
   border-radius: 50%;
-  background-color: #ccc;
+  background-color: #454545;
+  color: white;
+  border: 2px solid white;
+  font-weight: bold;
 }
 
 .server-avatar {
-  background-color: #0096ff;
+  background-color: #0096ff !important;
   color: white;
 }
 
 .message-content {
   margin: 0 10px;
   padding: 8px;
-  background-color: #f0f0f0;
+  background-color: #454545;
   border-radius: 10px;
+  box-shadow: 0 0 2px white;
   word-break: break-word;
 }
 
@@ -103,11 +126,19 @@
 
 .message-timestamp {
   font-size: 12px;
-  color: #888;
+  color: #989898;
   float: right;
   margin: 0;
 }
 
 .disconnect-link {
   color: red;
+}
+
+.gorph {
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  box-shadow: 0 0 3px white;
+  margin-right: 10px;
 }
