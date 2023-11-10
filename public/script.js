@@ -58,11 +58,6 @@ createApp({
         return;
       }
 
-      if (this.nickname === this.clients.find((c) => c === this.nickname)) {
-        alert("Nickname is already in use");
-        return;
-      }
-
       this.ws = new WebSocket(
         `wss://go-websocket-production.up.railway.app/ws?nickname=${this.nickname}&room=${this.room}`,
       );
