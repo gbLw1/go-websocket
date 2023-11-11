@@ -36,6 +36,8 @@ const res = await fetch(
 );
 ```
 
+3. run the server:
+
 ```bash
 go run ./main.go
 ```
