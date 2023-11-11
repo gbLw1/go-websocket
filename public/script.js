@@ -1,6 +1,17 @@
 const { createApp, ref } = Vue;
 
 createApp({
+  onMounted() {
+    // Set room from url params
+    const urlParams = new URLSearchParams(window.location.search);
+    this.room = urlParams.get("room");
+
+    // Scroll to bottom of chat
+    const chatMessages = document.querySelector(".chat-messages");
+    chatMessages.addEventListener("MutationObserver", () => {
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    });
+  },
   data() {
     return {
       nickname: "",
@@ -22,11 +33,6 @@ createApp({
       };
       this.ws.send(JSON.stringify(msg));
       this.message = "";
-
-      const chatMessages = document.querySelector(".chat-messages");
-      chatMessages.addEventListener("MutationObserver", () => {
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-      });
     },
 
     onOpen(event) {
@@ -63,6 +69,8 @@ createApp({
       );
       this.ws.onopen = this.onOpen;
       this.ws.onmessage = this.onMessage;
+
+      window.location.href = `?room=${this.room}`;
     },
 
     disconnect() {
