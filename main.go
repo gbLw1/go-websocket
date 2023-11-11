@@ -35,12 +35,12 @@ func wsHandler(w http.ResponseWriter, r *http.Request) {
 	nickname := r.URL.Query().Get("nickname")
 	roomFromQuery := r.URL.Query().Get("room")
 
-	// validate required query params
-
+	// validate nickname
 	if nickname == "" {
 		log.Fatal("Server: No nickname provided")
 	}
 
+	// validate room
 	if roomFromQuery == "" {
 		log.Println("SERVER: No room provided, using default room")
 		roomFromQuery = "general"
@@ -76,13 +76,16 @@ func reader(client *Client, room string) {
 		// notifies when client disconnected
 		if err != nil {
 			log.Println("SERVER: " + client.Nickname + " disconnected from room " + client.roomName)
+
 			delete(clients, client)
+
 			broadcastCh <- Message{
 				From:    "SERVER",
 				To:      room,
 				Content: client.Nickname + " disconnected",
 				SentAt:  getTimestamp(),
 			}
+
 			break
 		}
 
@@ -127,7 +130,12 @@ func broadcast() {
 		for client := range clients {
 			if client.roomName == msg.To {
 				message, _ := json.Marshal(msg)
-				client.connection.Write(client.context, websocket.MessageText, message)
+
+				client.connection.Write(
+					client.context,
+					websocket.MessageText,
+					message,
+				)
 			}
 		}
 	}
@@ -135,9 +143,12 @@ func broadcast() {
 
 func clientsHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Content-Type", "application/json")
+
 	var res []*Client
+	roomFromQuery := r.URL.Query().Get("room")
+
 	for c := range clients {
-		if c.roomName == r.URL.Query().Get("room") {
+		if c.roomName == roomFromQuery {
 			res = append(res, c)
 		}
 	}
