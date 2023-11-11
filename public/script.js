@@ -75,8 +75,6 @@ createApp({
       );
       this.ws.onopen = this.onOpen;
       this.ws.onmessage = this.onMessage;
-
-      window.location.href = `?room=${this.room}`;
     },
 
     disconnect() {
