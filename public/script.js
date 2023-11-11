@@ -8,6 +8,7 @@ createApp({
 
     if (roomFromQuery) {
       this.room = roomFromQuery;
+      connect();
     } else {
       this.room = "general";
     }
@@ -83,6 +84,7 @@ createApp({
       this.message = "";
       this.messages = [];
       this.clients = [];
+      history.pushState({}, "", "/");
     },
 
     async updateConnectedClients() {
