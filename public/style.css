@@ -31,6 +31,10 @@ body {
   order: -1;
 }
 
+.client-pannel > div {
+  word-wrap: break-word;
+}
+
 .form {
   display: flex;
   flex-wrap: wrap;
