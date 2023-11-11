@@ -1,19 +1,6 @@
 const { createApp, ref } = Vue;
 
 createApp({
-  onMounted() {
-    // Set room from url params
-    const urlParams = new URLSearchParams(window.location.search);
-    const roomFromQuery = urlParams.get("room");
-
-    if (roomFromQuery) {
-      this.room = roomFromQuery;
-      connect();
-    } else {
-      this.room = "general";
-    }
-  },
-
   data() {
     return {
       nickname: "",
@@ -26,7 +13,21 @@ createApp({
     };
   },
 
+  created() {
+    this.verifyRoomFromQuery();
+  },
+
   methods: {
+    verifyRoomFromQuery() {
+      const params = new URLSearchParams(window.location.search);
+      const room = params.get("room");
+
+      if (room) {
+        this.room = room;
+        this.connect();
+      }
+    },
+
     sendMessage() {
       const msg = {
         from: this.nickname,
@@ -35,6 +36,12 @@ createApp({
       };
       this.ws.send(JSON.stringify(msg));
       this.message = "";
+
+      // Scroll to bottom of chat
+      const chatMessages = document.querySelector(".chat-messages");
+      chatMessages.addEventListener("MutationObserver", () => {
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+      });
     },
 
     onOpen(event) {
@@ -50,15 +57,13 @@ createApp({
       }
 
       this.updateConnectedClients();
-
-      // Scroll to bottom of chat
-      const chatMessages = document.querySelector(".chat-messages");
-      chatMessages.addEventListener("MutationObserver", () => {
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-      });
     },
 
     connect() {
+      if (!this.room) {
+        this.room = "general";
+      }
+
       if (!this.nickname) {
         this.nickname = `Guest${Math.floor(Math.random() * 1000)}`;
       }
@@ -74,7 +79,7 @@ createApp({
       this.ws.onopen = this.onOpen;
       this.ws.onmessage = this.onMessage;
 
-      history.pushState({}, "", `/?room=${this.room ?? "general"}`);
+      history.pushState({}, "", `/?room=${this.room || "general"}`);
     },
 
     disconnect() {
@@ -84,6 +89,7 @@ createApp({
       this.message = "";
       this.messages = [];
       this.clients = [];
+
       history.pushState({}, "", "/");
     },
 
@@ -92,6 +98,7 @@ createApp({
         const res = await fetch(
           `https://go-websocket-production.up.railway.app/clients?room=${this.room}`,
         );
+
         const data = await res.json();
         this.clients = data;
       } catch (error) {
