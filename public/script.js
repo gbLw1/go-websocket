@@ -19,6 +19,7 @@ createApp({
       chatMessages.scrollTop = chatMessages.scrollHeight;
     });
   },
+
   data() {
     return {
       nickname: "",
@@ -58,10 +59,6 @@ createApp({
     },
 
     connect() {
-      if (!this.room) {
-        this.room = "general";
-      }
-
       if (!this.nickname) {
         this.nickname = `Guest${Math.floor(Math.random() * 1000)}`;
       }
@@ -76,6 +73,8 @@ createApp({
       );
       this.ws.onopen = this.onOpen;
       this.ws.onmessage = this.onMessage;
+
+      history.pushState({}, "", `/?room=${this.room}`);
     },
 
     disconnect() {
