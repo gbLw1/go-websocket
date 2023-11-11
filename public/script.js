@@ -6,18 +6,11 @@ createApp({
     const urlParams = new URLSearchParams(window.location.search);
     const roomFromQuery = urlParams.get("room");
 
-    if (!roomFromQuery) {
-      urlParams.set("room", "general");
-      this.room = "general";
-    } else {
+    if (roomFromQuery) {
       this.room = roomFromQuery;
+    } else {
+      this.room = "general";
     }
-
-    // Scroll to bottom of chat
-    const chatMessages = document.querySelector(".chat-messages");
-    chatMessages.addEventListener("MutationObserver", () => {
-      chatMessages.scrollTop = chatMessages.scrollHeight;
-    });
   },
 
   data() {
@@ -56,6 +49,12 @@ createApp({
       }
 
       this.updateConnectedClients();
+
+      // Scroll to bottom of chat
+      const chatMessages = document.querySelector(".chat-messages");
+      chatMessages.addEventListener("MutationObserver", () => {
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+      });
     },
 
     connect() {
@@ -74,7 +73,7 @@ createApp({
       this.ws.onopen = this.onOpen;
       this.ws.onmessage = this.onMessage;
 
-      history.pushState({}, "", `/?room=${this.room}`);
+      history.pushState({}, "", `/?room=${this.room ?? "general"}`);
     },
 
     disconnect() {
