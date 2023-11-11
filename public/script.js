@@ -4,7 +4,13 @@ createApp({
   onMounted() {
     // Set room from url params
     const urlParams = new URLSearchParams(window.location.search);
-    this.room = urlParams.get("room");
+    const roomFromQuery = urlParams.get("room");
+
+    if (!roomFromQuery) {
+      urlParams.set("room", "general");
+    } else {
+      this.room = roomFromQuery;
+    }
 
     // Scroll to bottom of chat
     const chatMessages = document.querySelector(".chat-messages");
