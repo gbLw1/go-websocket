@@ -3,7 +3,7 @@ const { createApp, ref } = Vue;
 createApp({
   data() {
     return {
-      nickname: "",
+      nickname: localStorage.getItem("nickname") || "",
       room: "",
       connected: false,
       ws: null,
@@ -73,6 +73,10 @@ createApp({
         return;
       }
 
+      if (!this.nickname.toLowerCase().includes("guest")) {
+        localStorage.setItem("nickname", this.nickname);
+      }
+
       this.ws = new WebSocket(
         `wss://go-websocket-production.up.railway.app/ws?nickname=${this.nickname}&room=${this.room}`,
       );
@@ -91,6 +95,7 @@ createApp({
       this.clients = [];
 
       history.pushState({}, "", "/");
+      localStorage.removeItem("nickname");
     },
 
     async updateConnectedClients() {
