@@ -12,7 +12,7 @@ import (
 )
 
 type Client struct {
-	Nickname   string
+	Nickname   string `json:"nickname"`
 	connection *websocket.Conn
 	context    context.Context
 	roomName   string
