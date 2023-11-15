@@ -18,6 +18,19 @@ createApp({
   },
 
   methods: {
+    createSlug(str) {
+      // remove accents
+      let slug = str?.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+      // remove special characters
+      slug = slug?.replace(/[^\w\s-]/g, "").toLowerCase();
+
+      // replace spaces with dash
+      slug = slug?.replace(/\s+/g, "-");
+
+      return slug;
+    },
+
     verifyRoomFromQuery() {
       const params = new URLSearchParams(window.location.search);
       const room = params.get("room");
@@ -60,6 +73,8 @@ createApp({
     },
 
     connect() {
+      this.room = this.createSlug(this.room);
+
       if (!this.room) {
         this.room = "general";
       }
@@ -78,7 +93,8 @@ createApp({
       }
 
       this.ws = new WebSocket(
-        `wss://go-websocket-production.up.railway.app/ws?nickname=${this.nickname}&room=${this.room}`,
+        // `wss://go-websocket-production.up.railway.app/ws?nickname=${this.nickname}&room=${this.room}`, // production
+        `ws://localhost:3000/ws?nickname=${this.nickname}&room=${this.room}`, // local
       );
       this.ws.onopen = this.onOpen;
       this.ws.onmessage = this.onMessage;
@@ -101,7 +117,8 @@ createApp({
     async updateConnectedClients() {
       try {
         const res = await fetch(
-          `https://go-websocket-production.up.railway.app/clients?room=${this.room}`,
+          // `https://go-websocket-production.up.railway.app/clients?room=${this.room}`, // production
+          `http://localhost:3000/clients?room=${this.room}`, // local
         );
 
         const data = await res.json();
