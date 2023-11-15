@@ -10,14 +10,25 @@ createApp({
       message: "",
       messages: [],
       clients: [],
+      unreadMessages: 0,
     };
   },
 
   created() {
     this.verifyRoomFromQuery();
+    this.handleVisibilityChange();
   },
 
   methods: {
+    handleVisibilityChange() {
+      document.addEventListener("visibilitychange", () => {
+        if (document.visibilityState === "visible") {
+          this.unreadMessages = 0;
+          document.title = `Chat - ${this.room}`;
+        }
+      });
+    },
+
     createSlug(str) {
       // remove accents
       let slug = str?.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
@@ -70,6 +81,16 @@ createApp({
       }
 
       this.updateConnectedClients();
+
+      if (window.document.visibilityState === "visible") {
+        this.unreadMessages = 0;
+        document.title = `Chat - ${this.room}`;
+      } else {
+        this.unreadMessages++;
+        document.title = `Chat (${
+          this.unreadMessages > 99 ? "+99" : this.unreadMessages
+        }) - ${this.room}`;
+      }
     },
 
     connect() {
