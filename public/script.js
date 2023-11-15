@@ -23,22 +23,20 @@ createApp({
     handleVisibilityChange() {
       document.addEventListener("visibilitychange", () => {
         if (document.visibilityState === "visible") {
-          this.unreadMessages = 0;
-          document.title = `Chat - ${this.room}`;
+          resetChatNotifications();
         }
       });
     },
 
+    resetChatNotifications() {
+      this.unreadMessages = 0;
+      document.title = `Chat - ${this.room}`;
+    },
+
     createSlug(str) {
-      // remove accents
-      let slug = str?.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-
-      // remove special characters
-      slug = slug?.replace(/[^\w\s-]/g, "").toLowerCase();
-
-      // replace spaces with dash
-      slug = slug?.replace(/\s+/g, "-");
-
+      let slug = str?.normalize("NFD").replace(/[\u0300-\u036f]/g, ""); // remove accents
+      slug = slug?.replace(/[^\w\s-]/g, "").toLowerCase(); // remove special characters
+      slug = slug?.replace(/\s+/g, "-"); // replace spaces with dash
       return slug;
     },
 
@@ -83,8 +81,7 @@ createApp({
       this.updateConnectedClients();
 
       if (window.document.visibilityState === "visible") {
-        this.unreadMessages = 0;
-        document.title = `Chat - ${this.room}`;
+        resetChatNotifications();
       } else {
         this.unreadMessages++;
         document.title = `Chat (${
