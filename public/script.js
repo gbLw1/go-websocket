@@ -127,6 +127,7 @@ createApp({
       this.message = "";
       this.messages = [];
       this.clients = [];
+      this.room = "";
 
       history.pushState({}, "", "/");
       localStorage.removeItem("nickname");
