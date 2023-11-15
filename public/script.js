@@ -23,14 +23,14 @@ createApp({
     handleVisibilityChange() {
       document.addEventListener("visibilitychange", () => {
         if (document.visibilityState === "visible") {
-          resetChatNotifications();
+          this.resetChatNotifications();
         }
       });
     },
 
     resetChatNotifications() {
       this.unreadMessages = 0;
-      document.title = `Chat - ${this.room}`;
+      document.title = `Chat - ${this.room || "Welcome"}`;
     },
 
     createSlug(str) {
@@ -81,7 +81,7 @@ createApp({
       this.updateConnectedClients();
 
       if (window.document.visibilityState === "visible") {
-        resetChatNotifications();
+        this.resetChatNotifications();
       } else {
         this.unreadMessages++;
         document.title = `Chat (${
