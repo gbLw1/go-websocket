@@ -84,9 +84,35 @@ createApp({
         this.resetChatNotifications();
       } else {
         this.unreadMessages++;
+
         document.title = `Chat (${
           this.unreadMessages > 99 ? "+99" : this.unreadMessages
         }) - ${this.room}`;
+
+        var audio = new Audio("notification.mp3");
+        audio.play();
+
+        // if (!("Notification" in window)) {
+        //   alert("This browser does not support desktop notification");
+        // } else if (Notification.permission === "granted") {
+        //   // if the notifications permission is granted, show a notification
+        //   var notification = new Notification("gbL Chat", {
+        //     icon: "https://avatars.githubusercontent.com/u/73954686?v=4",
+        //     body: "You have new messages.",
+        //   });
+        //   audio.play();
+        // } else if (Notification.permission !== "denied") {
+        //   // if the notifications permission wasn't denied, ask for permission
+        //   Notification.requestPermission().then(function (permission) {
+        //     if (permission === "granted") {
+        //       var notification = new Notification("gbL Chat", {
+        //         icon: "https://avatars.githubusercontent.com/u/73954686?v=4",
+        //         body: "You have new messages.",
+        //       });
+        //       audio.play();
+        //     }
+        //   });
+        // }
       }
     },
 
@@ -131,6 +157,7 @@ createApp({
 
       history.pushState({}, "", "/");
       localStorage.removeItem("nickname");
+      document.title = "Chat - Welcome";
     },
 
     async updateConnectedClients() {
