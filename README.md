@@ -23,7 +23,7 @@ The server and client were written in [Go](https://golang.org) and [VueJS](https
 - [x] Dark theme
 - [x] Responsive design
 - [ ] See who is typing
-- [ ] Different colors for each user
+- [x] Different colors for each user
 - [ ] Send links
 - [ ] Emoji support
 
@@ -43,23 +43,22 @@ The websocket packaged used in this project is:
 
 1. change the `./public/script.js` file to use the local server on connect() method:
 
-```javascript
-this.ws = new WebSocket(
-    `ws://localhost:3000/ws?nickname=${this.nickname}&room=${this.room}`
-);
-```
+    ```javascript
+    this.ws = new WebSocket(
+        `ws://localhost:3000/ws?nickname=${this.nickname}&color=${this.color}&room=${this.room}`
+    );
+    ```
 
 2. also change the updateConnectedClients() method to use the local server:
 
-```javascript
-const res = await fetch(
-    `https://localhost:3000/clients?room=${this.room}`,
-);
-```
+    ```javascript
+    const res = await fetch(
+        `https://localhost:3000/clients?room=${this.room}`,
+    );
+    ```
 
 3. run the server:
 
-```bash
-go run ./main.go
-```
-
+    ```bash
+    go run ./main.go
+    ```
