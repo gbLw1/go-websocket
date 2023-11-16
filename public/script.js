@@ -52,6 +52,10 @@ createApp({
     },
 
     sendMessage() {
+      if (!this.color) {
+        this.color = Math.floor(Math.random() * 16777215).toString(16);
+      }
+
       const msg = {
         from: {
           nickname: this.nickname,
@@ -59,6 +63,7 @@ createApp({
         },
         content: this.message,
       };
+
       this.ws.send(JSON.stringify(msg));
       this.message = "";
 
