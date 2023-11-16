@@ -45,7 +45,7 @@ The websocket packaged used in this project is:
 
     ```javascript
     this.ws = new WebSocket(
-        `ws://localhost:3000/ws?nickname=${this.nickname}&color=${this.color}&room=${this.room}`
+        `ws://localhost:3000/ws?nickname=${this.nickname}&room=${this.room}`
     );
     ```
 
