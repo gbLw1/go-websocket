@@ -21,7 +21,7 @@ type Client struct {
 
 type Message struct {
 	From    Client `json:"from"`
-	To      string `json:"to"`
+	to      string
 	Content string `json:"content"`
 	SentAt  string `json:"sentAt"`
 }
@@ -82,7 +82,7 @@ func reader(client *Client, room string) {
 
 			broadcastCh <- Message{
 				From:    Client{Nickname: "SERVER", Color: "64BFFF"},
-				To:      room,
+				to:      room,
 				Content: client.Nickname + " disconnected",
 				SentAt:  getTimestamp(),
 			}
@@ -96,13 +96,13 @@ func reader(client *Client, room string) {
 
 		// log message to server
 		log.Println(
-			"ROOM: " + msgReceived.To + " -> " + msgReceived.From.Nickname + ": " + msgReceived.Content,
+			"ROOM: " + msgReceived.to + " -> " + msgReceived.From.Nickname + ": " + msgReceived.Content,
 		)
 
 		// broadcast message to all clients
 		broadcastCh <- Message{
 			From:    msgReceived.From,
-			To:      room,
+			to:      room,
 			Content: msgReceived.Content,
 			SentAt:  getTimestamp(),
 		}
@@ -119,7 +119,7 @@ func joiner() {
 		// notifies when a new client connects
 		broadcastCh <- Message{
 			From:    Client{Nickname: "SERVER", Color: "64BFFF"},
-			To:      client.roomName,
+			to:      client.roomName,
 			Content: client.Nickname + " connected",
 			SentAt:  getTimestamp(),
 		}
@@ -129,7 +129,7 @@ func joiner() {
 func broadcast() {
 	for msg := range broadcastCh {
 		for client := range clients {
-			if client.roomName == msg.To {
+			if client.roomName == msg.to {
 				message, _ := json.Marshal(msg)
 
 				client.connection.Write(
