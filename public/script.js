@@ -4,6 +4,7 @@ createApp({
   data() {
     return {
       nickname: localStorage.getItem("nickname") || "",
+      color: Math.floor(Math.random() * 16777215).toString(16),
       room: "",
       connected: false,
       ws: null,
@@ -52,7 +53,10 @@ createApp({
 
     sendMessage() {
       const msg = {
-        from: this.nickname,
+        from: {
+          nickname: this.nickname,
+          color: this.color,
+        },
         to: this.room,
         content: this.message,
       };
@@ -137,8 +141,8 @@ createApp({
       }
 
       this.ws = new WebSocket(
-        `wss://go-websocket-production.up.railway.app/ws?nickname=${this.nickname}&room=${this.room}`, // production
-        // `ws://localhost:3000/ws?nickname=${this.nickname}&room=${this.room}`, // local
+        `wss://go-websocket-production.up.railway.app/ws?nickname=${this.nickname}&color=${this.color}&room=${this.room}`, // production
+        // `ws://localhost:3000/ws?nickname=${this.nickname}&color=${this.color}&room=${this.room}`, // local
       );
       this.ws.onopen = this.onOpen;
       this.ws.onmessage = this.onMessage;

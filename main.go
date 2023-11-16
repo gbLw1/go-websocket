@@ -13,13 +13,14 @@ import (
 
 type Client struct {
 	Nickname   string `json:"nickname"`
+	Color      string `json:"color"`
 	connection *websocket.Conn
 	context    context.Context
 	roomName   string
 }
 
 type Message struct {
-	From    string `json:"from"`
+	From    Client `json:"from"`
 	To      string `json:"to"`
 	Content string `json:"content"`
 	SentAt  string `json:"sentAt"`
@@ -33,17 +34,23 @@ var (
 
 func wsHandler(w http.ResponseWriter, r *http.Request) {
 	nickname := r.URL.Query().Get("nickname")
-	roomFromQuery := r.URL.Query().Get("room")
+	color := r.URL.Query().Get("color")
+	room := r.URL.Query().Get("room")
 
 	// validate nickname
 	if nickname == "" {
 		log.Fatal("Server: No nickname provided")
 	}
 
+	// validate color
+	if color == "" {
+		log.Fatal("SERVER: No color provided for the client")
+	}
+
 	// validate room
-	if roomFromQuery == "" {
+	if room == "" {
 		log.Println("SERVER: No room provided, using default room")
-		roomFromQuery = "general"
+		room = "general"
 	}
 
 	// open connection
@@ -60,14 +67,15 @@ func wsHandler(w http.ResponseWriter, r *http.Request) {
 	// create a client
 	client := Client{
 		Nickname:   nickname,
+		Color:      color,
 		connection: conn,
 		context:    r.Context(),
-		roomName:   roomFromQuery,
+		roomName:   room,
 	}
 
 	joinCh <- &client
 
-	reader(&client, roomFromQuery)
+	reader(&client, room)
 }
 
 func reader(client *Client, room string) {
@@ -80,7 +88,7 @@ func reader(client *Client, room string) {
 			delete(clients, client)
 
 			broadcastCh <- Message{
-				From:    "SERVER",
+				From:    Client{Nickname: "SERVER", Color: "64BFFF"},
 				To:      room,
 				Content: client.Nickname + " disconnected",
 				SentAt:  getTimestamp(),
@@ -95,7 +103,7 @@ func reader(client *Client, room string) {
 
 		// log message to server
 		log.Println(
-			"ROOM: " + msgReceived.To + " -> " + msgReceived.From + ": " + msgReceived.Content,
+			"ROOM: " + msgReceived.To + " -> " + msgReceived.From.Nickname + ": " + msgReceived.Content,
 		)
 
 		// broadcast message to all clients
@@ -117,7 +125,7 @@ func joiner() {
 
 		// notifies when a new client connects
 		broadcastCh <- Message{
-			From:    "SERVER",
+			From:    Client{Nickname: "SERVER", Color: "64BFFF"},
 			To:      client.roomName,
 			Content: client.Nickname + " connected",
 			SentAt:  getTimestamp(),
