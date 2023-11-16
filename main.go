@@ -34,17 +34,11 @@ var (
 
 func wsHandler(w http.ResponseWriter, r *http.Request) {
 	nickname := r.URL.Query().Get("nickname")
-	color := r.URL.Query().Get("color")
 	room := r.URL.Query().Get("room")
 
 	// validate nickname
 	if nickname == "" {
 		log.Fatal("Server: No nickname provided")
-	}
-
-	// validate color
-	if color == "" {
-		log.Fatal("SERVER: No color provided for the client")
 	}
 
 	// validate room
@@ -67,7 +61,6 @@ func wsHandler(w http.ResponseWriter, r *http.Request) {
 	// create a client
 	client := Client{
 		Nickname:   nickname,
-		Color:      color,
 		connection: conn,
 		context:    r.Context(),
 		roomName:   room,
