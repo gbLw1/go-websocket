@@ -6,6 +6,27 @@ This is a simple websocket chat application.
 
 The server and client were written in [Go](https://golang.org) and [VueJS](https://vuejs.org).
 
+## Features
+
+- [x] Choose a nickname
+- [x] Choose a room (multiple chat rooms support)
+- [x] Send messages
+- [x] See who is online in the room
+- [x] Connected clients list updated in real time
+- [x] Disconnect from the room
+- [x] Share room directly with URL link
+- [x] Notifications from the server when someone joins or leaves the room
+- [x] Notifications of unread messages in the browser tab + sound
+- [x] Connected room displayed in the browser tab
+- [x] Scroll down to the last message when a new message is received
+- [x] Nickname saved in the browser local storage
+- [x] Dark theme
+- [x] Responsive design
+- [ ] See who is typing
+- [ ] Different colors for each user
+- [ ] Send links
+- [ ] Emoji support
+
 ## Example
 
 ![example](./docs/example_darkmode.png)
