@@ -57,7 +57,6 @@ createApp({
           nickname: this.nickname,
           color: this.color,
         },
-        to: this.room,
         content: this.message,
       };
       this.ws.send(JSON.stringify(msg));
