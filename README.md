@@ -25,7 +25,7 @@ The server and client were written in [Go](https://golang.org) and [VueJS](https
 - [ ] See who is typing
 - [x] Different colors for each user
 - [ ] Send links
-- [ ] Emoji support
+- [ ] Auto reconnect to the server when connection is lost
 
 ## Example
 
