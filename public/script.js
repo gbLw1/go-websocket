@@ -4,7 +4,7 @@ createApp({
   data() {
     return {
       nickname: localStorage.getItem("nickname") || "",
-      color: Math.floor(Math.random() * 16777215).toString(16),
+      color: this.generateRandomHexColor(),
       room: "",
       connected: false,
       ws: null,
@@ -21,6 +21,15 @@ createApp({
   },
 
   methods: {
+    generateRandomHexColor() {
+      return (
+        "#" +
+        Math.floor(Math.random() * 16777215)
+          .toString(16)
+          .padStart(6, "0")
+      );
+    },
+
     handleVisibilityChange() {
       document.addEventListener("visibilitychange", () => {
         if (document.visibilityState === "visible") {
@@ -52,10 +61,6 @@ createApp({
     },
 
     sendMessage() {
-      if (!this.color) {
-        this.color = Math.floor(Math.random() * 16777215).toString(16);
-      }
-
       const msg = {
         from: {
           nickname: this.nickname,
@@ -99,28 +104,6 @@ createApp({
 
         var audio = new Audio("notification.mp3");
         audio.play();
-
-        // if (!("Notification" in window)) {
-        //   alert("This browser does not support desktop notification");
-        // } else if (Notification.permission === "granted") {
-        //   // if the notifications permission is granted, show a notification
-        //   var notification = new Notification("gbL Chat", {
-        //     icon: "https://avatars.githubusercontent.com/u/73954686?v=4",
-        //     body: "You have new messages.",
-        //   });
-        //   audio.play();
-        // } else if (Notification.permission !== "denied") {
-        //   // if the notifications permission wasn't denied, ask for permission
-        //   Notification.requestPermission().then(function (permission) {
-        //     if (permission === "granted") {
-        //       var notification = new Notification("gbL Chat", {
-        //         icon: "https://avatars.githubusercontent.com/u/73954686?v=4",
-        //         body: "You have new messages.",
-        //       });
-        //       audio.play();
-        //     }
-        //   });
-        // }
       }
     },
 
