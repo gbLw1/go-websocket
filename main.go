@@ -96,7 +96,7 @@ func reader(client *Client, room string) {
 
 		// log message to server
 		log.Println(
-			"ROOM: " + msgReceived.to + " -> " + msgReceived.From.Nickname + ": " + msgReceived.Content,
+			"ROOM: " + room + " -> " + msgReceived.From.Nickname + ": " + msgReceived.Content,
 		)
 
 		// broadcast message to all clients
