@@ -29,7 +29,8 @@
         <h2>Room: {{room}}</h2>
         <label>Connected clients</label>
         <ul>
-          <li v-for="(client, i) in clients" :key="i">{{client.nickname}}</li>
+          <li v-for="c in clients.sort((a, b) => a.nickname.localeCompare(b.nickname))" :key="c.id"
+            :style="{color: c.color}">{{c.nickname}}</li>
         </ul>
       </div>
     </div>
@@ -53,7 +54,7 @@
           </div>
 
           <div class="message-content">
-            <p class="message-nickname" :style="{color: '#' + msg.from.color}">
+            <p class="message-nickname" :style="{color: msg.from.color}">
               {{msg.from.nickname}}
             </p>
             <p class="message-text">{{msg.content}}</p>
