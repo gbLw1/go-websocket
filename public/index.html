@@ -30,7 +30,7 @@
         <label>Connected clients</label>
         <ul>
           <li v-for="c in clients.sort((a, b) => a.nickname.localeCompare(b.nickname))" :key="c.id"
-            :style="{color: c.color}">{{c.nickname}}</li>
+            :style="{color: c.color}">{{c.nickname}}{{c.color === '' ? ' - (lurking)' : ''}}</li>
         </ul>
       </div>
     </div>

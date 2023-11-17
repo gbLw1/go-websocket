@@ -24,6 +24,7 @@ The server and client were written in [Go](https://golang.org) and [VueJS](https
 - [x] Responsive design
 - [ ] See who is typing
 - [x] Different colors for each user
+- [x] Anti lurker system (the user must send a message to show their color in the list of connected clients)
 - [ ] Send links
 - [ ] Auto reconnect to the server when connection is lost
 
