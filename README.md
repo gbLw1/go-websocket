@@ -39,7 +39,7 @@ The websocket packaged used in this project is:
 
 ## Run
 
-### Testing the app locally:
+### Testing the app locally
 
 1. change the `./public/script.js` file to use the local server on connect() method:
 
@@ -63,7 +63,7 @@ The websocket packaged used in this project is:
     go run ./main.go
     ```
 
-### Connect to the server only:
+### Connect to the server only
 
 To open a new WebSocket connection to the server, you have to pass the following query parameters:
 
@@ -77,4 +77,3 @@ const ws = new WebSocket(
     `ws://localhost:3000/ws?nickname=${nickname}&room=${room}`
 );
 ```
-
