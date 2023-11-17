@@ -8,10 +8,12 @@ import (
 	"os"
 	"time"
 
+	"github.com/google/uuid"
 	"nhooyr.io/websocket"
 )
 
 type Client struct {
+	ID         string `json:"id"`
 	Nickname   string `json:"nickname"`
 	Color      string `json:"color"`
 	connection *websocket.Conn
@@ -60,6 +62,7 @@ func wsHandler(w http.ResponseWriter, r *http.Request) {
 
 	// create a client
 	client := Client{
+		ID:         uuid.New().String(),
 		Nickname:   nickname,
 		connection: conn,
 		context:    r.Context(),
@@ -81,7 +84,7 @@ func reader(client *Client, room string) {
 			delete(clients, client)
 
 			broadcastCh <- Message{
-				From:    Client{Nickname: "SERVER", Color: "64BFFF"},
+				From:    Client{Nickname: "SERVER", Color: "#64BFFF"},
 				to:      room,
 				Content: client.Nickname + " disconnected",
 				SentAt:  getTimestamp(),
@@ -93,6 +96,10 @@ func reader(client *Client, room string) {
 		// deserialize message
 		var msgReceived Message
 		json.Unmarshal(data, &msgReceived)
+
+		if client.Color == "" && msgReceived.From.Color != "" {
+			client.Color = msgReceived.From.Color
+		}
 
 		// log message to server
 		log.Println(
@@ -118,7 +125,7 @@ func joiner() {
 
 		// notifies when a new client connects
 		broadcastCh <- Message{
-			From:    Client{Nickname: "SERVER", Color: "64BFFF"},
+			From:    Client{Nickname: "SERVER", Color: "#64BFFF"},
 			to:      client.roomName,
 			Content: client.Nickname + " connected",
 			SentAt:  getTimestamp(),
