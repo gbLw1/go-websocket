@@ -28,10 +28,17 @@ type Message struct {
 	SentAt  string `json:"sentAt"`
 }
 
+type Typing struct {
+	Client   string `json:"client"`
+	room     string
+	IsTyping bool `json:"isTyping"`
+}
+
 var (
 	clients     map[*Client]bool = make(map[*Client]bool)
 	joinCh      chan *Client     = make(chan *Client)
 	broadcastCh chan Message     = make(chan Message)
+	typingCh    chan Typing      = make(chan Typing)
 )
 
 func wsHandler(w http.ResponseWriter, r *http.Request) {
@@ -82,6 +89,7 @@ func reader(client *Client, room string) {
 			log.Println("SERVER: " + client.Nickname + " disconnected from room " + client.roomName)
 
 			delete(clients, client)
+			client.connection.Close(websocket.StatusNormalClosure, "")
 
 			broadcastCh <- Message{
 				From:    Client{Nickname: "SERVER", Color: "#64BFFF"},
@@ -149,6 +157,78 @@ func broadcast() {
 	}
 }
 
+func notifyTypingHandler(w http.ResponseWriter, r *http.Request) {
+	room := r.URL.Query().Get("room")
+	if room == "" {
+		log.Fatal("SERVER: No room provided to listen to typing")
+	}
+
+	conn, err := websocket.Accept(w, r, &websocket.AcceptOptions{
+		InsecureSkipVerify: true,
+	})
+	if err != nil {
+		log.Fatal("SERVER: Failed to open connection:", err)
+	}
+
+	go typingBroadcast(conn, r.Context())
+
+	client := Client{
+		ID:         uuid.New().String(),
+		connection: conn,
+		context:    r.Context(),
+		roomName:   room,
+	}
+
+	readerTyping(&client, room)
+}
+
+func readerTyping(client *Client, room string) {
+	for {
+		_, data, err := client.connection.Read(client.context)
+		if err != nil {
+			log.Println("SERVER: " + client.Nickname + " disconnected from room " + client.roomName)
+
+			delete(clients, client)
+			client.connection.Close(websocket.StatusNormalClosure, "")
+
+			break
+		}
+
+		var typingInfo Typing
+		json.Unmarshal(data, &typingInfo)
+
+		if typingInfo.IsTyping {
+			log.Println(
+				"ROOM: " + room + " -> " + typingInfo.Client + " is typing...",
+			)
+		} else {
+			log.Println("Room: " + room + " -> " + typingInfo.Client + " stopped typing")
+		}
+
+		typingCh <- Typing{
+			Client:   typingInfo.Client,
+			room:     room,
+			IsTyping: typingInfo.IsTyping,
+		}
+	}
+}
+
+func typingBroadcast(conn *websocket.Conn, ctx context.Context) {
+	for typer := range typingCh {
+		for client := range clients {
+			if client.roomName == typer.room {
+				json, _ := json.Marshal(typer)
+
+				conn.Write(
+					ctx,
+					websocket.MessageText,
+					json,
+				)
+			}
+		}
+	}
+}
+
 func clientsHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Content-Type", "application/json")
 
@@ -171,6 +251,7 @@ func getTimestamp() string {
 func main() {
 	http.Handle("/", http.FileServer(http.Dir("./public")))
 	http.HandleFunc("/ws", wsHandler)
+	http.HandleFunc("/typing", notifyTypingHandler)
 	http.HandleFunc("/clients", clientsHandler)
 
 	port := os.Getenv("PORT")
