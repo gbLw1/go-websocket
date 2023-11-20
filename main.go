@@ -125,13 +125,17 @@ func reader(client *Client, room string) {
 			continue
 		}
 
+		if client.Color == "" && msgReceived.From.Color != "" {
+			client.Color = msgReceived.From.Color
+		}
+
 		// broadcast message to all clients
 		broadcastCh <- Message{
 			Type: msgReceived.Type,
 			From: Client{
 				ID:       client.ID,
 				Nickname: client.Nickname,
-				Color:    msgReceived.From.Color,
+				Color:    client.Color,
 			},
 			to:       room,
 			Content:  msgReceived.Content,
