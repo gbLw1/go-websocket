@@ -207,7 +207,7 @@ createApp({
 
       // Check if nickname is already in use
       const res = await fetch(
-        `http://${ENVIRONMENTS.DEV}/clients?room=${this.room}`,
+        `http://${ENVIRONMENTS.PROD}/clients?room=${this.room}`,
       );
       const connectedClients = await res.json();
 
@@ -217,7 +217,7 @@ createApp({
       }
 
       this.ws = new WebSocket(
-        `ws://${ENVIRONMENTS.DEV}/ws?nickname=${this.nickname}&room=${this.room}`,
+        `ws://${ENVIRONMENTS.PROD}/ws?nickname=${this.nickname}&room=${this.room}`,
       );
       this.ws.onopen = this.onOpen;
       this.ws.onmessage = this.onMessage;
@@ -242,7 +242,7 @@ createApp({
     async updateConnectedClients() {
       try {
         const res = await fetch(
-          `http://${ENVIRONMENTS.DEV}/clients?room=${this.room}`,
+          `http://${ENVIRONMENTS.PROD}/clients?room=${this.room}`,
         );
 
         const data = await res.json();
