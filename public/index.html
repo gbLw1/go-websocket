@@ -30,7 +30,9 @@
         <label>Connected clients</label>
         <ul>
           <li v-for="c in clients.sort((a, b) => a.nickname.localeCompare(b.nickname))" :key="c.id"
-            :style="{color: c.color}">{{c.nickname}}{{c.color === '' ? ' - (lurking)' : ''}}</li>
+            :style="{color: c.color}">
+            {{c.nickname}}{{c.color === '' ? ' - (lurking)' : ''}}
+          </li>
         </ul>
       </div>
     </div>
@@ -69,8 +71,16 @@
         </li>
       </ul>
 
+      <div v-if="clientsTyping.length > 0">
+        <p class="typing">
+          <span v-for="(c, i) in clientsTyping" :key="i">
+            {{c}}{{i < clientsTyping.length - 1 ? ', ' : ' ' }}</span>
+              {{clientsTyping.length > 1 ? 'are' : 'is'}} typing...
+        </p>
+      </div>
+
       <form class="form" @submit.prevent="sendMessage">
-        <input v-model="message" class="input" type="text" placeholder="message" />
+        <input v-model="message" @input="handleInput($event)" class="input" type="text" placeholder="message" />
         <button class="button" type="submit">Send</button>
       </form>
     </div>

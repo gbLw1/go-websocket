@@ -21,11 +21,19 @@ type Client struct {
 	roomName   string
 }
 
+const (
+	// Message types
+	MESSAGE      = "message"
+	NOTIFICATION = "notification"
+)
+
 type Message struct {
-	From    Client `json:"from"`
-	to      string
-	Content string `json:"content"`
-	SentAt  string `json:"sentAt"`
+	Type     string `json:"type"` // message or notification
+	From     Client `json:"from"`
+	to       string
+	Content  string `json:"content"`  // required in Type: message
+	IsTyping bool   `json:"isTyping"` // required in Type: notification
+	SentAt   string `json:"sentAt"`
 }
 
 var (
@@ -81,9 +89,19 @@ func reader(client *Client, room string) {
 		if err != nil {
 			log.Println("SERVER: " + client.Nickname + " disconnected from room " + client.roomName)
 
+			broadcastCh <- Message{
+				Type:     NOTIFICATION,
+				From:     Client{Nickname: client.Nickname},
+				to:       room,
+				IsTyping: false,
+				SentAt:   getTimestamp(),
+			}
+
 			delete(clients, client)
+			client.connection.Close(websocket.StatusNormalClosure, "")
 
 			broadcastCh <- Message{
+				Type:    MESSAGE,
 				From:    Client{Nickname: "SERVER", Color: "#64BFFF"},
 				to:      room,
 				Content: client.Nickname + " disconnected",
@@ -97,21 +115,28 @@ func reader(client *Client, room string) {
 		var msgReceived Message
 		json.Unmarshal(data, &msgReceived)
 
-		if client.Color == "" && msgReceived.From.Color != "" {
-			client.Color = msgReceived.From.Color
-		}
-
 		// log message to server
-		log.Println(
-			"ROOM: " + room + " -> " + msgReceived.From.Nickname + ": " + msgReceived.Content,
-		)
+		if msgReceived.Type == MESSAGE {
+			log.Printf("ROOM: %s -> %s: %s\n", room, msgReceived.From.Nickname, msgReceived.Content)
+		} else if msgReceived.Type == NOTIFICATION {
+			log.Printf("ROOM: %s -> %s is typing: %t\n", room, msgReceived.From.Nickname, msgReceived.IsTyping)
+		} else {
+			log.Printf("ROOM: %s -> %s sent an unknown message type\n", room, msgReceived.From.Nickname)
+			continue
+		}
 
 		// broadcast message to all clients
 		broadcastCh <- Message{
-			From:    msgReceived.From,
-			to:      room,
-			Content: msgReceived.Content,
-			SentAt:  getTimestamp(),
+			Type: msgReceived.Type,
+			From: Client{
+				ID:       client.ID,
+				Nickname: client.Nickname,
+				Color:    msgReceived.From.Color,
+			},
+			to:       room,
+			Content:  msgReceived.Content,
+			IsTyping: msgReceived.IsTyping,
+			SentAt:   getTimestamp(),
 		}
 	}
 }
@@ -125,6 +150,7 @@ func joiner() {
 
 		// notifies when a new client connects
 		broadcastCh <- Message{
+			Type:    MESSAGE,
 			From:    Client{Nickname: "SERVER", Color: "#64BFFF"},
 			to:      client.roomName,
 			Content: client.Nickname + " connected",
