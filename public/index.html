@@ -74,7 +74,7 @@
       <div v-if="clientsTyping.length > 0">
         <p class="typing">
           <span v-for="(c, i) in clientsTyping" :key="i">
-            {{c}} {{i < clientsTyping.length - 1 ? ', ' : ' ' }}</span>
+            {{c}}{{i < clientsTyping.length - 1 ? ', ' : ' ' }}</span>
               {{clientsTyping.length > 1 ? 'are' : 'is'}} typing...
         </p>
       </div>
