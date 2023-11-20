@@ -46,23 +46,15 @@ The websocket packaged used in this project is:
 The `./public/script.js` file has a `ENVIRONMENTS` const that can be used to
 switch between the local server and the production server.
 
-1. change the `./public/script.js` file to use the local server on connect() method:
+1. find and replace the `ENVIRONMENTS` const in `./public/script.js`:
 
-   ```javascript
-   this.ws = new WebSocket(
-     `ws://${ENVIRONMENTS.DEV}/ws?nickname=${this.nickname}&room=${this.room}`
-   );
+   search for `.PROD.` and replace it with `.DEV.`
+
+   ```bash
+   :%s/\.PROD/.DEV/g
    ```
 
-2. also change the updateConnectedClients() method to use the local server:
-
-   ```javascript
-   const res = await fetch(
-     `https://${ENVIRONMENTS.DEV}/clients?room=${this.room}`
-   );
-   ```
-
-3. run the server:
+2. run the server:
 
    ```bash
    go run ./main.go

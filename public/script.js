@@ -1,8 +1,14 @@
 const { createApp, ref } = Vue;
 
 const ENVIRONMENTS = {
-  PROD: "go-websocket-production.up.railway.app",
-  DEV: "localhost:3000",
+  PROD: {
+    BASE_WS_URL: "wss://go-websocket-production.up.railway.app",
+    BASE_HTTP_URL: "https://go-websocket-production.up.railway.app",
+  },
+  DEV: {
+    BASE_WS_URL: "ws://localhost:3000",
+    BASE_HTTP_URL: "http://localhost:3000",
+  },
 };
 
 createApp({
@@ -207,7 +213,7 @@ createApp({
 
       // Check if nickname is already in use
       const res = await fetch(
-        `https://${ENVIRONMENTS.PROD}/clients?room=${this.room}`,
+        `${ENVIRONMENTS.PROD.BASE_HTTP_URL}/clients?room=${this.room}`,
       );
       const connectedClients = await res.json();
 
@@ -217,7 +223,7 @@ createApp({
       }
 
       this.ws = new WebSocket(
-        `wss://${ENVIRONMENTS.PROD}/ws?nickname=${this.nickname}&room=${this.room}`,
+        `${ENVIRONMENTS.PROD.BASE_WS_URL}/ws?nickname=${this.nickname}&room=${this.room}`,
       );
       this.ws.onopen = this.onOpen;
       this.ws.onmessage = this.onMessage;
@@ -242,7 +248,7 @@ createApp({
     async updateConnectedClients() {
       try {
         const res = await fetch(
-          `https://${ENVIRONMENTS.PROD}/clients?room=${this.room}`,
+          `${ENVIRONMENTS.PROD.BASE_HTTP_URL}/clients?room=${this.room}`,
         );
 
         const data = await res.json();
