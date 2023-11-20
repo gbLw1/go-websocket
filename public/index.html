@@ -50,7 +50,8 @@
           :class="[msg.from.nickname == this.nickname ? 'message-right': '']">
           <!-- Avatar left side (receiver) -->
           <div v-if="msg.from.nickname != this.nickname" :title="msg.from.nickname" class="message-avatar"
-            :class="[msg.from?.nickname == 'SERVER' ? 'server-avatar': '']">
+            :class="[msg.from?.nickname == 'SERVER' ? 'server-avatar': '']"
+            :style="{border: msg.from?.nickname == 'SERVER' ? '2px solid white': '2px solid ' + msg.from.color}">
             {{msg.from?.nickname?.toUpperCase().includes('GUEST') ? '??' :
             msg.from?.nickname?.slice(0, 2).toUpperCase()}}
           </div>
@@ -64,7 +65,8 @@
           </div>
 
           <!-- Avatar right side (sender) -->
-          <div v-if="msg.from.nickname == this.nickname" :title="msg.from.nickname" class="message-avatar">
+          <div v-if="msg.from.nickname == this.nickname" :title="msg.from.nickname" class="message-avatar"
+            :style="{border: msg.from?.nickname == 'SERVER' ? '2px solid white': '2px solid ' + msg.from.color}">
             {{msg.from.nickname.toUpperCase().includes('GUEST') ? '??' :
             msg.from.nickname.slice(0, 2).toUpperCase()}}
           </div>
