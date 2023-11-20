@@ -22,7 +22,7 @@ The server and client were written in [Go](https://golang.org) and [VueJS](https
 - [x] Nickname saved in the browser local storage
 - [x] Dark theme
 - [x] Responsive design
-- [ ] See who is typing
+- [x] See who is typing
 - [x] Different colors for each user
 - [x] Anti lurker system (the user must send a message to show their color in the list of connected clients)
 - [ ] Send links
@@ -42,11 +42,14 @@ The websocket packaged used in this project is:
 
 ### Testing the app locally
 
+The `./public/script.js` file has a `ENVIRONMENTS` const that can be used to
+switch between the local server and the production server.
+
 1. change the `./public/script.js` file to use the local server on connect() method:
 
     ```javascript
     this.ws = new WebSocket(
-        `ws://localhost:3000/ws?nickname=${this.nickname}&room=${this.room}`
+        `ws://${ENVIRONMENTS.DEV}/ws?nickname=${this.nickname}&room=${this.room}`
     );
     ```
 
@@ -54,7 +57,7 @@ The websocket packaged used in this project is:
 
     ```javascript
     const res = await fetch(
-        `https://localhost:3000/clients?room=${this.room}`,
+        `https://${ENVIRONMENTS.DEV}/clients?room=${this.room}`,
     );
     ```
 
@@ -73,8 +76,49 @@ To open a new WebSocket connection to the server, you have to pass the following
 
 Example:
 
-```javascript
-const ws = new WebSocket(
-    `ws://localhost:3000/ws?nickname=${nickname}&room=${room}`
-);
-```
+1. Connect to the `general` room with the nickname `John`:
+
+    ```javascript
+    const ws = new WebSocket(
+        `ws://localhost:3000/ws?nickname=John&room=general`
+    );
+    ```
+
+2. Subscribe to see the messages from the ws:
+
+    ```javascript
+    ws.onmessage = (event) => {
+        console.log(event.data);
+    };
+    ```
+
+3. Send a message to the server:
+
+    3.1. Payload message format:
+
+    ```json
+    {
+        "type": "message", // accepted values: "message", "notification"
+        "from": {
+            "nickname": "John", // sender nickname
+            "color": "#000000" // hexademical color
+        }
+        content: "Hello world!" // required for type "message"
+        isTyping: true // boolean required for type "notification"
+    }
+    ```
+
+    3.2. Sending a Hello world! message:
+
+    ```javascript
+    ws.send(
+        JSON.stringify({
+            type: "message",
+            from: {
+                nickname: "John",
+                color: "#000000",
+            },
+            content: "Hello world!",
+        })
+    );
+    ```
