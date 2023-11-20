@@ -21,24 +21,25 @@ type Client struct {
 	roomName   string
 }
 
-type Message struct {
-	From    Client `json:"from"`
-	to      string
-	Content string `json:"content"`
-	SentAt  string `json:"sentAt"`
-}
+const (
+	// Message types
+	MESSAGE      = "message"
+	NOTIFICATION = "notification"
+)
 
-type Typing struct {
-	Client   string `json:"client"`
-	room     string
-	IsTyping bool `json:"isTyping"`
+type Message struct {
+	Type     string `json:"type"` // message or notification
+	From     Client `json:"from"`
+	to       string
+	Content  string `json:"content"`  // required in Type: message
+	IsTyping bool   `json:"isTyping"` // required in Type: notification
+	SentAt   string `json:"sentAt"`
 }
 
 var (
 	clients     map[*Client]bool = make(map[*Client]bool)
 	joinCh      chan *Client     = make(chan *Client)
 	broadcastCh chan Message     = make(chan Message)
-	typingCh    chan Typing      = make(chan Typing)
 )
 
 func wsHandler(w http.ResponseWriter, r *http.Request) {
@@ -88,10 +89,19 @@ func reader(client *Client, room string) {
 		if err != nil {
 			log.Println("SERVER: " + client.Nickname + " disconnected from room " + client.roomName)
 
+			broadcastCh <- Message{
+				Type:     NOTIFICATION,
+				From:     Client{Nickname: client.Nickname},
+				to:       room,
+				IsTyping: false,
+				SentAt:   getTimestamp(),
+			}
+
 			delete(clients, client)
 			client.connection.Close(websocket.StatusNormalClosure, "")
 
 			broadcastCh <- Message{
+				Type:    MESSAGE,
 				From:    Client{Nickname: "SERVER", Color: "#64BFFF"},
 				to:      room,
 				Content: client.Nickname + " disconnected",
@@ -105,21 +115,28 @@ func reader(client *Client, room string) {
 		var msgReceived Message
 		json.Unmarshal(data, &msgReceived)
 
-		if client.Color == "" && msgReceived.From.Color != "" {
-			client.Color = msgReceived.From.Color
-		}
-
 		// log message to server
-		log.Println(
-			"ROOM: " + room + " -> " + msgReceived.From.Nickname + ": " + msgReceived.Content,
-		)
+		if msgReceived.Type == MESSAGE {
+			log.Printf("ROOM: %s -> %s: %s\n", room, msgReceived.From.Nickname, msgReceived.Content)
+		} else if msgReceived.Type == NOTIFICATION {
+			log.Printf("ROOM: %s -> %s is typing: %t\n", room, msgReceived.From.Nickname, msgReceived.IsTyping)
+		} else {
+			log.Printf("ROOM: %s -> %s sent an unknown message type\n", room, msgReceived.From.Nickname)
+			continue
+		}
 
 		// broadcast message to all clients
 		broadcastCh <- Message{
-			From:    msgReceived.From,
-			to:      room,
-			Content: msgReceived.Content,
-			SentAt:  getTimestamp(),
+			Type: msgReceived.Type,
+			From: Client{
+				ID:       client.ID,
+				Nickname: client.Nickname,
+				Color:    msgReceived.From.Color,
+			},
+			to:       room,
+			Content:  msgReceived.Content,
+			IsTyping: msgReceived.IsTyping,
+			SentAt:   getTimestamp(),
 		}
 	}
 }
@@ -133,6 +150,7 @@ func joiner() {
 
 		// notifies when a new client connects
 		broadcastCh <- Message{
+			Type:    MESSAGE,
 			From:    Client{Nickname: "SERVER", Color: "#64BFFF"},
 			to:      client.roomName,
 			Content: client.Nickname + " connected",
@@ -151,78 +169,6 @@ func broadcast() {
 					client.context,
 					websocket.MessageText,
 					message,
-				)
-			}
-		}
-	}
-}
-
-func notifyTypingHandler(w http.ResponseWriter, r *http.Request) {
-	room := r.URL.Query().Get("room")
-	if room == "" {
-		log.Fatal("SERVER: No room provided to listen to typing")
-	}
-
-	conn, err := websocket.Accept(w, r, &websocket.AcceptOptions{
-		InsecureSkipVerify: true,
-	})
-	if err != nil {
-		log.Fatal("SERVER: Failed to open connection:", err)
-	}
-
-	go typingBroadcast(conn, r.Context())
-
-	client := Client{
-		ID:         uuid.New().String(),
-		connection: conn,
-		context:    r.Context(),
-		roomName:   room,
-	}
-
-	readerTyping(&client, room)
-}
-
-func readerTyping(client *Client, room string) {
-	for {
-		_, data, err := client.connection.Read(client.context)
-		if err != nil {
-			log.Println("SERVER: " + client.Nickname + " disconnected from room " + client.roomName)
-
-			delete(clients, client)
-			client.connection.Close(websocket.StatusNormalClosure, "")
-
-			break
-		}
-
-		var typingInfo Typing
-		json.Unmarshal(data, &typingInfo)
-
-		if typingInfo.IsTyping {
-			log.Println(
-				"ROOM: " + room + " -> " + typingInfo.Client + " is typing...",
-			)
-		} else {
-			log.Println("Room: " + room + " -> " + typingInfo.Client + " stopped typing")
-		}
-
-		typingCh <- Typing{
-			Client:   typingInfo.Client,
-			room:     room,
-			IsTyping: typingInfo.IsTyping,
-		}
-	}
-}
-
-func typingBroadcast(conn *websocket.Conn, ctx context.Context) {
-	for typer := range typingCh {
-		for client := range clients {
-			if client.roomName == typer.room {
-				json, _ := json.Marshal(typer)
-
-				conn.Write(
-					ctx,
-					websocket.MessageText,
-					json,
 				)
 			}
 		}
@@ -251,7 +197,6 @@ func getTimestamp() string {
 func main() {
 	http.Handle("/", http.FileServer(http.Dir("./public")))
 	http.HandleFunc("/ws", wsHandler)
-	http.HandleFunc("/typing", notifyTypingHandler)
 	http.HandleFunc("/clients", clientsHandler)
 
 	port := os.Getenv("PORT")

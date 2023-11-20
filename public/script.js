@@ -1,5 +1,10 @@
 const { createApp, ref } = Vue;
 
+const ENVIRONMENTS = {
+  PROD: "go-websocket-production.up.railway.app",
+  DEV: "localhost:3000",
+};
+
 createApp({
   data() {
     return {
@@ -12,7 +17,6 @@ createApp({
       messages: [],
       clients: [],
       unreadMessages: 0,
-      typingWs: null,
       isTyping: false,
       clientsTyping: [],
     };
@@ -64,7 +68,26 @@ createApp({
     },
 
     sendMessage() {
+      if (this.isTyping) {
+        this.isTyping = false;
+
+        this.ws.send(
+          JSON.stringify({
+            type: "notification",
+            from: {
+              nickname: this.nickname,
+            },
+            isTyping: false,
+          }),
+        );
+
+        this.clientsTyping = this.clientsTyping.filter(
+          (c) => c !== this.nickname,
+        );
+      }
+
       const msg = {
+        type: "message",
         from: {
           nickname: this.nickname,
           color: this.color,
@@ -74,17 +97,6 @@ createApp({
 
       this.ws.send(JSON.stringify(msg));
       this.message = "";
-
-      this.isTyping = false;
-      this.typingWs.send(
-        JSON.stringify({
-          client: this.nickname,
-          isTyping: false,
-        }),
-      );
-      this.clientsTyping = this.clientsTyping.filter(
-        (client) => client !== this.nickname,
-      );
 
       // Scroll to bottom of chat
       const chatMessages = document.querySelector(".chat-messages");
@@ -99,6 +111,20 @@ createApp({
 
     onMessage(event) {
       const data = JSON.parse(event.data);
+
+      switch (data.type) {
+        case "message":
+          this.handleMessage(data);
+          break;
+        case "notification":
+          this.handleNotification(data);
+          break;
+        default:
+          break;
+      }
+    },
+
+    handleMessage(data) {
       this.messages.push(data);
 
       if (this.messages.length > 100) {
@@ -121,37 +147,45 @@ createApp({
       }
     },
 
+    handleNotification(data) {
+      const { from, isTyping } = data;
+
+      if (isTyping) {
+        if (
+          this.clientsTyping.includes(from.nickname) ||
+          from.nickname === this.nickname
+        ) {
+          return;
+        }
+
+        this.clientsTyping.push(from.nickname);
+      } else {
+        this.clientsTyping = this.clientsTyping.filter(
+          (c) => c !== from.nickname,
+        );
+      }
+    },
+
     handleInput(event) {
       setTimeout(() => {
         const inputHasValue = event.target.value.trim().length > 0;
 
         if (this.isTyping !== inputHasValue) {
           this.isTyping = inputHasValue;
-          this.typingWs.send(
+          this.ws.send(
             JSON.stringify({
-              client: this.nickname,
-              isTyping: !!inputHasValue,
+              type: "notification",
+              from: {
+                nickname: this.nickname,
+              },
+              isTyping: inputHasValue,
             }),
           );
         }
       }, 200);
     },
 
-    onTyping(event) {
-      const data = JSON.parse(event.data);
-      const { client, isTyping } = data;
-
-      if (isTyping) {
-        if (this.clientsTyping.includes(client)) {
-          return;
-        }
-        this.clientsTyping.push(client);
-      } else {
-        this.clientsTyping = this.clientsTyping.filter((c) => c !== client);
-      }
-    },
-
-    connect() {
+    async connect() {
       this.room = this.createSlug(this.room);
 
       if (!this.room) {
@@ -171,35 +205,30 @@ createApp({
         localStorage.setItem("nickname", this.nickname);
       }
 
-      this.connectToWs();
+      // Check if nickname is already in use
+      const res = await fetch(
+        `http://${ENVIRONMENTS.DEV}/clients?room=${this.room}`,
+      );
+      const connectedClients = await res.json();
 
-      this.connectToWsTyping();
+      if (connectedClients?.some((c) => c.nickname === this.nickname)) {
+        alert("Nickname is already in use");
+        return;
+      }
 
-      history.pushState({}, "", `/?room=${this.room || "general"}`);
-    },
-
-    connectToWs() {
       this.ws = new WebSocket(
-        // `wss://go-websocket-production.up.railway.app/ws?nickname=${this.nickname}&room=${this.room}`, // production
-        `ws://localhost:3000/ws?nickname=${this.nickname}&room=${this.room}`, // local
+        `ws://${ENVIRONMENTS.DEV}/ws?nickname=${this.nickname}&room=${this.room}`,
       );
       this.ws.onopen = this.onOpen;
       this.ws.onmessage = this.onMessage;
-    },
 
-    connectToWsTyping() {
-      this.typingWs = new WebSocket(
-        // `wss://go-websocket-production.up.railway.app/typing?room=${this.room}`, // production
-        `ws://localhost:3000/typing?room=${this.room}`, // local
-      );
-      this.typingWs.onmessage = this.onTyping;
+      history.pushState({}, "", `/?room=${this.room || "general"}`);
     },
 
     disconnect() {
       this.ws.close();
       this.connected = false;
       this.ws.close();
-      this.typingWs.close();
       this.message = "";
       this.messages = [];
       this.clients = [];
@@ -213,8 +242,7 @@ createApp({
     async updateConnectedClients() {
       try {
         const res = await fetch(
-          // `https://go-websocket-production.up.railway.app/clients?room=${this.room}`, // production
-          `http://localhost:3000/clients?room=${this.room}`, // local
+          `http://${ENVIRONMENTS.DEV}/clients?room=${this.room}`,
         );
 
         const data = await res.json();
