@@ -122,7 +122,6 @@ func reader(client *Client, room string) {
 			log.Printf("ROOM: %s -> %s is typing: %t\n", room, msgReceived.From.Nickname, msgReceived.IsTyping)
 		} else {
 			log.Printf("ROOM: %s -> %s sent an unknown message type\n", room, msgReceived.From.Nickname)
-			continue
 		}
 
 		if client.Color == "" && msgReceived.From.Color != "" {

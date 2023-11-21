@@ -35,11 +35,10 @@ createApp({
     setInterval(() => {
       this.ws.send(
         JSON.stringify({
-          type: "notification",
+          type: "ping",
           from: {
             nickname: this.nickname,
           },
-          isTyping,
         }),
       );
     }, 60000); // 1 minute
