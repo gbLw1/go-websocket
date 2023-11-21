@@ -110,10 +110,10 @@ Example:
        "type": "message", // accepted values: "message", "notification"
        "from": {
            "nickname": "John", // sender nickname
-           "color": "#000000" // hexadecimal color (optional: default: #000000)
-       }
-       content: "Hello world!" // required for type "message"
-       isTyping: true // boolean required for type "notification"
+           "color": "#000000", // hexadecimal color (optional: default: #000000)
+       },
+       content: "Hello world!", // required for type "message"
+       isTyping: true, // boolean required for type "notification"
    }
    ```
 
