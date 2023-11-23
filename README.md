@@ -125,7 +125,6 @@ Example:
        type: "message",
        from: {
          nickname: "John",
-         color: "#000000",
        },
        content: "Hello world!",
      })
