@@ -105,15 +105,15 @@ Example:
 
     3.1. Payload message format:
 
-   ```json
+   ```js
    {
-       "type": "message", // accepted values: "message", "notification"
+       "type": "message", // string (required): accepted values = "message", "notification"
        "from": {
-           "nickname": "John", // sender nickname
-           "color": "#000000", // hexadecimal color (optional: default: #000000)
+           "nickname": "John", // string (required): your nickname
+           "color": "#000000", // string (optional): hexadecimal color (default: #000000)
        },
-       content: "Hello world!", // required for type "message"
-       isTyping: true, // boolean required for type "notification"
+       content: "Hello world!", // string (required for type "message")
+       isTyping: true, // boolean (required for type "notification")
    }
    ```
 
