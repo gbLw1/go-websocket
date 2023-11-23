@@ -31,17 +31,6 @@ createApp({
   created() {
     this.verifyRoomFromQuery();
     this.handleVisibilityChange();
-
-    setInterval(() => {
-      this.ws.send(
-        JSON.stringify({
-          type: "ping",
-          from: {
-            nickname: this.nickname,
-          },
-        }),
-      );
-    }, 60000); // 1 minute
   },
 
   methods: {
