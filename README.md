@@ -105,15 +105,15 @@ Example:
 
     3.1. Payload message format:
 
-   ```js
+   ```javascript
    {
        "type": "message", // string (required): accepted values = "message", "notification"
        "from": {
            "nickname": "John", // string (required): your nickname
            "color": "#000000", // string (optional): hexadecimal color (default: #000000)
        },
-       content: "Hello world!", // string (required for type "message")
-       isTyping: true, // boolean (required for type "notification")
+       content: "Hello world!", // string (required for "message" type): the message content
+       isTyping: true, // boolean (required for "notification" type): notifies other connected clients that you are typing
    }
    ```
 
