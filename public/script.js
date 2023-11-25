@@ -2,8 +2,8 @@ const { createApp, ref } = Vue;
 
 const ENVIRONMENTS = {
   PROD: {
-    BASE_WS_URL: "wss://go-websocket-production.up.railway.app",
-    BASE_HTTP_URL: "https://go-websocket-production.up.railway.app",
+    BASE_WS_URL: "wss://go-ws.up.railway.app",
+    BASE_HTTP_URL: "https://go-ws.up.railway.app",
   },
   DEV: {
     BASE_WS_URL: "ws://localhost:3000",
@@ -74,7 +74,7 @@ createApp({
     },
 
     sendMessage() {
-      if (!this.ws.readyState === this.ws.OPEN) {
+      if (this.ws.readyState !== this.ws.OPEN) {
         console.log("Connection lost, reconnecting...");
         this.connect();
         return;
