@@ -8,26 +8,35 @@ The server and client were written in [Go](https://golang.org) and [VueJS](https
 
 ## Features
 
-- [x] Choose a nickname
-- [x] Choose a room (multiple chat rooms support)
-- [x] Send messages
-- [x] See who is online in the room
-- [x] Connected clients list updated in real time
-- [x] Disconnect from the room
-- [x] Share room directly with URL link
-- [x] Notifications from the server when someone joins or leaves the room
-- [x] Notifications of unread messages in the browser tab + sound
-- [x] Connected room displayed in the browser tab
-- [x] Scroll down to the last message when a new message is received
-- [x] Nickname saved in the browser local storage
-- [x] Dark theme
-- [x] Responsive design
-- [x] See who is typing
-- [x] Different colors for each user
-- [x] Anti lurker system (the user must send a message to show their color in the list of connected clients)
-- [x] Unique nickname per room
-- [ ] Send links
-- [ ] Auto reconnect to the server when connection is lost
+- v1
+  - [x] Choose a nickname
+  - [x] Send messages
+  - [x] See who is online in the room
+  - [x] Connected clients list updated in real time
+  - [x] Disconnect from the room
+  - [x] Scroll down to the last message when a new message is received
+  - [x] Notifications from the server when someone joins or leaves the room
+
+- v2
+  - [x] Choose a room (multiple chat rooms support)
+  - [x] Dark theme
+  - [x] Responsive design
+
+- v3
+  - [x] Share room directly with URL link
+  - [x] Nickname saved in the browser local storage
+
+- v4
+  - [x] Connected room displayed in the browser tab
+  - [x] Notifications of unread messages in the browser tab + sound
+
+- v5
+  - [x] See who is typing
+  - [x] Different colors for each user
+  - [x] Anti lurker system (the user must send a message to show their color in the list of connected clients)
+  - [x] Unique nickname per room
+  - [x] Auto reconnect to the server when sending a message with connection closed
+  - [ ] Send links
 
 ## Example
 
