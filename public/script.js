@@ -74,6 +74,12 @@ createApp({
     },
 
     sendMessage() {
+      if (!this.ws.readyState === this.ws.OPEN) {
+        console.log("Connection lost, reconnecting...");
+        this.connect();
+        return;
+      }
+
       if (this.isTyping) {
         this.isTyping = false;
 
@@ -227,6 +233,8 @@ createApp({
       );
       this.ws.onopen = this.onOpen;
       this.ws.onmessage = this.onMessage;
+      this.ws.onclose = (e) =>
+        console.log("Connection closed at ", new Date().toLocaleString(), e);
 
       history.pushState({}, "", `/?room=${this.room || "general"}`);
     },
@@ -234,7 +242,6 @@ createApp({
     disconnect() {
       this.ws.close();
       this.connected = false;
-      this.ws.close();
       this.message = "";
       this.messages = [];
       this.clients = [];
