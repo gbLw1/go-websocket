@@ -36,7 +36,6 @@ The server and client were written in [Go](https://golang.org) and [VueJS](https
   - [x] Anti lurker system (the user must send a message to show their color in the list of connected clients)
   - [x] Unique nickname per room
   - [x] Auto reconnect to the server when sending a message with connection closed
-  - [ ] Send links
 
 ## Example
 
