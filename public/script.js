@@ -132,6 +132,7 @@ createApp({
           this.handleNotification(data);
           break;
         default:
+          console.log("Unknown message type", data);
           break;
       }
     },
