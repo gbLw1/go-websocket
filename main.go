@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -116,7 +117,7 @@ func reader(client *Client, room string) {
 		json.Unmarshal(data, &msgReceived)
 
 		// log message to server
-		if msgReceived.Type == MESSAGE {
+		if strings.ToLower(msgReceived.Type) == MESSAGE {
 			log.Printf("ROOM: %s -> %s: %s\n", room, msgReceived.From.Nickname, msgReceived.Content)
 		} else if msgReceived.Type == NOTIFICATION {
 			log.Printf("ROOM: %s -> %s is typing: %t\n", room, msgReceived.From.Nickname, msgReceived.IsTyping)
